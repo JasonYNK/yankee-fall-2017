@@ -8,18 +8,17 @@
 function returnFirstArgument(arg) {
 	return arg;
 }
-console.log(returnFirstArgument(5));
+// console.log(returnFirstArgument(5));
 /*
  Задание 2:
 
  Функция должна принимать два аргумента и возвращать сумму переданных значений
  Значение по умолчанию второго аргумента должно быть 100
  */
-function defaultParameterValue(a, b) {
-	var b = 100;
+function defaultParameterValue(a, b = 100) {
 	return a + b;
 }
-console.log(defaultParameterValue(3));
+
 /*
  Задание 3:
 
@@ -29,7 +28,7 @@ console.log(defaultParameterValue(3));
 function returnArgumentsArray() {
 	return arguments;
 }
-console.log(returnArgumentsArray(5,3,5,3,5,6));
+
 /*
  Задание 4:
 
@@ -38,9 +37,7 @@ console.log(returnArgumentsArray(5,3,5,3,5,6));
 function returnFnResult(fn) {
 	return fn(3,5);
 }
-console.log(returnFnResult(function(a,b){
-	return a * b;
-}));
+
 
 /*
  Задание 5:
@@ -54,7 +51,7 @@ function returnCounter(number) {
 	}
 	return F();
 }
-console.log(returnCounter(4));
+
 /*
  Задание 6 *:
 
@@ -68,7 +65,7 @@ function bindFunction(fn, a, b) {
 function F(){
 	 return a + b;
 }
-console.log(bindFunction(F, 2, 3));
+
 
 
 function bind(func, context) {
@@ -76,11 +73,11 @@ function bind(func, context) {
     return func.apply(context, arguments);
   };
 }
- export {
+export {
     returnFirstArgument,
     defaultParameterValue,
     returnArgumentsArray,
     returnFnResult,
     returnCounter,
     bindFunction
-} 
+}
