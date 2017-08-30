@@ -8,18 +8,15 @@
 function returnFirstArgument(arg) {
 	 return arg;
 }
-console.log(returnFirstArgument(5));
 /*
  Задание 2:
 
  Функция должна принимать два аргумента и возвращать сумму переданных значений
  Значение по умолчанию второго аргумента должно быть 100
  */
-function defaultParameterValue(a, b) {
-	var b = 100;
+function defaultParameterValue(a, b = 100) {
 	return a + b;
 }
-console.log(defaultParameterValue(3));
 /*
  Задание 3:
 
@@ -27,9 +24,12 @@ console.log(defaultParameterValue(3));
  Количество переданных аргументов заранее неизвестно
  */
 function returnArgumentsArray() {
-	return arguments;
+	var arr = [];
+	for(var i = 0; i < arguments.length; i++){
+		arr[i] = arguments[i];
+	}
+	return arr;
 }
-console.log(returnArgumentsArray(5,3,5,3,5,6));
 /*
  Задание 4:
 
@@ -38,9 +38,6 @@ console.log(returnArgumentsArray(5,3,5,3,5,6));
 function returnFnResult(fn) {
 	return fn(3,5);
 }
-console.log(returnFnResult(function(a,b){
-	return a * b;
-}));
 
 /*
  Задание 5:
@@ -49,33 +46,30 @@ console.log(returnFnResult(function(a,b){
  При вызове F, переданное число должно быть увеличено на единицу и возвращено из F
  */
 function returnCounter(number) {
-		var F = function(){
-			return number + 1;
-	}
-	return F();
+		if(number === undefined){
+			number = 0;
+		}
+		return function F(){
+			return number+=1;
+		}
 }
-console.log(returnCounter(4));
 /*
  Задание 6 *:
 
  Функция должна принимать другую функцию (F) и некоторое количество дополнительных аргументов
  Функция должна привязать переданные аргументы к функции F и вернуть получившуюся функцию
  */
-function bindFunction(fn, a, b) {
-	var fn2 = bind(fn, this);
-	return fn2();
+/*function bindFunction(fn) {
+	return function(){
+		return fn.bind(bindFunction, arguments);
+	}
+}*/
+function bindFunction(fn, ...arg) {
+    return fn.bind(null, ...arg);
 }
-function F(){
-	 return a + b;
-}
-console.log(bindFunction(F, 2, 3));
 
 
-function bind(func, context) {
-  return function() { 
-    return func.apply(context, arguments);
-  };
-}
+
  export {
     returnFirstArgument,
     defaultParameterValue,
