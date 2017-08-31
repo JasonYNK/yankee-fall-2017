@@ -10,20 +10,13 @@
  Зарпещено использовать встроенные методы для работы с массивами
  */
  function isAllTrue(array, fn) {
- 	try {
- 		if(typeof fn !== 'function'){
- 			throw new Error();
- 		}
- 	}catch(e){
- 		console.error('fn is not a function!');
- 	}
- 	try {
- 		if(typeof array !== "object" || !(array instanceof Array) || array.length === 0){
+ 	if(!(array instanceof Array) || array.length === 0){
  			throw new Error('empty array!');
  		}
- 	}catch(e){
- 		console.error('empty array!');
- 	}	
+	if(typeof fn !== 'function'){
+		throw new Error('fn is not a function');
+	}
+ 		
  	for(var i = 0; i < array.length; i++){
  		if(!fn(array[i])){
  			return false;
@@ -42,19 +35,18 @@
  Зарпещено использовать встроенные методы для работы с массивами
  */
 function isSomeTrue(array, fn) {
+	if(!(array instanceof Array) || array.length === 0){
+	 			throw new Error('empty array!');
+	 		}
+ 		if(typeof fn !== 'function'){
+ 			throw new Error('fn is not a function!');
+ 		}
 	for(var i = 0; i < array.length; i++){
  		if(fn(array[i])){
  			return true;
  		}
  	}
  	return false;
- 	try {
- 		if(typeof fn !== 'function'){
- 			throw new Error();
- 		}
- 	}catch(e){
- 		console.error('fn is not a function!');
- 	}
 }
 
 /*
@@ -65,17 +57,17 @@ function isSomeTrue(array, fn) {
  Необходимо выбрасывать исключение в случаях:
  - fn не является функцией (с текстом "fn is not a function")
  */
-function returnBadArguments(fn, ...arg) {
-	try {
- 		if(typeof fn !== 'function'){
- 			throw new Error();
- 		}
- 	}catch(e){
- 		console.error('fn is not a function!');
- 	}
+function returnBadArguments(fn, ...arg) {	
 	var arr = [];
+	if(typeof fn !== 'function'){
+ 			throw new Error('fn is not a function');
+ 		}
 	for(var i = 0; i < arg.length; i++){
-		arr[i] = fn(arg[i]);
+		try{
+			fn(arg[i]);
+		}catch(e){
+			arr.push(arg[i]);
+		}
 	}
 	return arr;
 }
@@ -94,46 +86,40 @@ function returnBadArguments(fn, ...arg) {
  - number не является числом (с текстом "number is not a number")
  - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
- function calculator(number = 0, ...arg) {
- 	try {
+ function calculator(number = 0) {
  		if(typeof number !== 'number'){
- 		throw new Error();
+ 			throw new Error('number is not a number');
  		}
- 	}catch(e){
- 		console.error('number is not a number');
- 	}
- 	
  	 var obj = {
  		sum: function(){
- 			for(var i = 0; i < arg.length; i++){
- 				number+=arg[i];
+ 			for(var i = 0; i < arguments.length; i++){
+ 				number = number + arguments[i];
  			}
- 		}
+ 			return number;
+ 		},
  		dif: function(){
- 			for(var i = 0; i < arg.length; i++){
- 				number-=arg[i];
+ 			for(var i = 0; i < arguments.length; i++){
+ 				number-=arguments[i];
  			}
- 		}
+ 			return number;
+ 		},
  		div: function(){
- 			try {
- 			for(var i = 0; i < arg.length; i++){
- 					if(arg[i] === 0){
- 						throw new Error();
+ 			for(var i = 0; i < arguments.length; i++){
+ 					if(arguments[i] === 0){
+ 						throw new Error('division by 0');
  					}
- 					number/=arg[i];
+ 					number/=arguments[i];
  				}
- 			}
- 		}
- 		catch(e){
- 				console.error('division by 0');
- 					}
+ 				return number;
+ 		},
  		mul: function(){
- 			for(var i = 0; i < arg.length; i++){
- 				number*=arg[i];
+ 			for(var i = 0; i < arguments.length; i++){
+ 				number*=arguments[i];
  			}
+ 			return number;
  		}
  	}
- 	return obj;
+ 	return obj; 
 }
 export {
     isAllTrue,
@@ -141,3 +127,5 @@ export {
     returnBadArguments,
     calculator
 };
+
+
