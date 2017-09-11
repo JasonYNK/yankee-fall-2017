@@ -54,12 +54,13 @@ function prepend(what, where) {
  */
 function findAllPSiblings(where) {
     var arr = [];
-	var collection = where.children;
-	var length = collection.length;
-    for(var i = 0; i < length; i++){
-    	if(collection[i].nextElementSibling !== null && collection[i].nextElementSibling.tagName === 'P'){
-    		arr.push(collection[i]);
-    	}
+    var collection = where.children;
+    var length = collection.length;
+
+    for (var i = 0; i < length; i++) {
+        if (collection[i].nextElementSibling !== null && collection[i].nextElementSibling.tagName === 'P') {
+            arr.push(collection[i]);
+        }
     }
 
     return arr;
@@ -97,14 +98,14 @@ function findError(where) {
  * должно быть преобразовано в <div></div><p></p>
  */
 function deleteTextNodes(where) {
-	var nodeCollection = where.childNodes;
+    var nodeCollection = where.childNodes;
 
-	for(let i = 0; i < nodeCollection.length; i++){
-		if(nodeCollection[i].nodeType === 3){
-			where.removeChild(nodeCollection[i]);
-		}
-	}
-	return nodeCollection;
+    for(let i = 0; i < nodeCollection.length; i++){
+        if(nodeCollection[i].nodeType === 3){
+            where.removeChild(nodeCollection[i]);
+        }
+    }
+    return nodeCollection;
 }
 
 /**
@@ -118,23 +119,23 @@ function deleteTextNodes(where) {
  * должно быть преобразовано в <span><div><b></b></div><p></p></span>
  */
 function deleteTextNodesRecursive(where) {
-	let nodeCollection = where.childNodes;
+    let nodeCollection = where.childNodes;
 
-	for (let i = 0; i < nodeCollection.length; i++){
-		if (nodeCollection[i].nodeType === 3){
-			where.removeChild(nodeCollection[i]);
-		} 
-	}
+    for (let i = 0; i < nodeCollection.length; i++){
+        if (nodeCollection[i].nodeType === 3){
+            where.removeChild(nodeCollection[i]);
+        } 
+    }
 
-	if (nodeCollection.length !== 0){
-		for (let j = 0; j < nodeCollection.length; j++){
-			if(nodeCollection[j] === 3){
-				where.removeChild(nodeCollection[j]);
-			} else {
-				deleteTextNodesRecursive(nodeCollection[j]);
-			}
-		}
-	}
+    if (nodeCollection.length !== 0){
+        for (let j = 0; j < nodeCollection.length; j++){
+            if(nodeCollection[j] === 3){
+                where.removeChild(nodeCollection[j]);
+            } else {
+                deleteTextNodesRecursive(nodeCollection[j]);
+            }
+        }
+    }
 }
 
 /**
@@ -160,76 +161,51 @@ function deleteTextNodesRecursive(where) {
  * }
  */
 function collectDOMStat(root) {
-	var obj = {
-		tags: {},
-		classes: {},
-		texts: 0
-	}
+    var obj = {
+        tags: {},
+        classes: {},
+        texts: 0
+    }
 
-	addObjProp(root);
-	
-	function addObjProp(elem){
-		var rootCollection = elem.childNodes;
+    addObjProp(root);
+    
+    function addObjProp(elem){
+        var rootCollection = elem.childNodes;
 
-		for (let i = 0; i < rootCollection.length; i++){
-			if (rootCollection[i] === 3){
-				obj['texts']+=1;
-			}
+        for (let i = 0; i < rootCollection.length; i++){
+            if (rootCollection[i].nodeType === 3){
+                obj['texts'] += 1;
+            }
 
-			if (rootCollection[i] === 1){
-				if (rootCollection[i].tagName in obj.tags){
-					obj.tags[rootCollection[i].tagName]+=1;
-				} else {
-					obj.tags[rootCollection[i].tagName];
-				}
+            if (rootCollection[i].nodeType === 1){
+                if (rootCollection[i].tagName in obj.tags){
+                    obj.tags[rootCollection[i].tagName] += 1;
+                } else {
+                    obj.tags[rootCollection[i].tagName] = 1;
+                }
 
-				if (rootCollection[i].getAttribute('class') in obj.classes){
-					obj.classes[rootCollection[i].getAttribute('class')]+=1;
-				} else {
-					obj.classes[rootCollection[i].getAttribute('class')];
-				}
-			}
+                var classEl = rootCollection[i].className.split(' ');
 
-			if (rootCollection[i].childNodes.length !== 0){
-				addObjProp(rootCollection[i]);
-			}
-		}
-	}
-	return obj;
+                for(let i = 0; i < classEl.length; i++){
+                    if (classEl[i] in obj.classes){
+                        obj.classes[classEl[i]] += 1;
+                    } else {
+                        if(classEl[i] !== ''){
+                            obj.classes[classEl[i]] = 1;
+                        }
+                    }
+
+                }
+            }
+
+            if (rootCollection[i].childNodes.length > 0){
+                addObjProp(rootCollection[i]);
+            }
+        }
+    }
+    return obj;
  }
 
-   /*  var obj = {};
-
-	var rootCollection = root.childNodes;
-	var tagArr = [];
-	for (let i = 0; rootCollection.length; i++){
-		tagArr.push(rootCollection[i].tagName);
-	}
-
-	tagArr.sort();
-	var tags = {};
-	createTagProp(tagArr);
-
-	function createTagProp(array){
-		var specTagArr = [];
-		if(array.length === 0) break;
-
-		for(let i = 0; array.length; i++){
-
-		if((array[i].previousElementSibling === undefined) || array[i] === array[i].previousElementSibling){
-			specTagArr.push(array[i]);
-			array.splice(i, 1);
-		}
-	}
-	
-	tags.specTagArr[0] = specTagArr.length;
-	createTagProp(tagArr);
-	}
-
-	obj.tags = tags;
-	obj.texts = rootCollection.length;
-
-	return obj; */
 
 
 /**
@@ -264,6 +240,31 @@ function collectDOMStat(root) {
  * }
  */
 function observeChildNodes(where, fn) {
+    var observer = new MutationObserver(function(mutations) {
+        var obj = {
+            type: null,
+            nodes: []
+        };
+        mutations.forEach(function(mutation) {
+            if(mutation.addedNodes.length > 0){
+                obj.type = 'insert';
+                var arr = mutation.addedNodes;
+            }
+
+            if(mutation.removedNodes.length > 0){
+                obj.type = 'remove';
+                var arr = mutation.removedNodes;
+            }
+
+            obj.nodes.push(...arr);
+            fn(obj);
+        });    
+    });
+    
+ 
+    var config = { subtree: true, childList: true };
+ 
+    observer.observe(where, config);
 }
 
 export {
