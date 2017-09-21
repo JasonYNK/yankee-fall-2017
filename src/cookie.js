@@ -39,8 +39,74 @@ let addValueInput = homeworkContainer.querySelector('#add-value-input');
 let addButton = homeworkContainer.querySelector('#add-button');
 let listTable = homeworkContainer.querySelector('#list-table tbody');
 
+
+showCookie();
+function showCookie() {
+	listTable.innerHTML = '';
+	if(document.cookie !== '') {
+		var cookies = document.cookie;
+		cookies = cookies.split(';');
+
+		for (let i = 0; i < cookies.length; i++) {
+			let item = cookies[i].split('=');
+            
+			var cookieName = item[0];
+			
+			var cookieValue = item[1];
+			if (isMatching(cookieName, filterNameInput.value) || isMatching(cookieValue, filterNameInput.value)) {
+				var newTR = document.createElement('tr');
+				newTR.innerHTML = `<td> ${cookieName} </td> <td> ${cookieValue} </td>`;
+				listTable.appendChild(newTR);
+			//	createBtn(newTR, cookieName);
+						var btn = document.createElement('button');
+						btn.textContent = 'удалить';
+						var element = document.createElement('td');
+						newTR.appendChild(element);
+						element.appendChild(btn);
+						btn.addEventListener('click', function(){
+								var date = new Date(0);
+								document.cookie = cookieName + "=; path=/; expires=" + date.toUTCString();
+								showCookie();
+			});
+			}
+		}
+	}
+}
+
+function addCookie() {
+	var newTR = document.createElement('tr');
+	var nameV = addNameInput.value;
+	var valueV = addValueInput.value;
+	// addNameInput.value = '';
+	// addValueInput.value = '';
+	var date = new Date(new Date().getTime() + 60 * 1000 *60);
+	document.cookie = `${nameV}=${valueV}; path=/; expires="` + date.toUTCString();
+	showCookie();
+	
+}
+
+
+
+
+
+function isMatching(full, chunk) {
+    return (full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1);
+}
+
+
 filterNameInput.addEventListener('keyup', function() {
+ 	showCookie();
 });
 
+
 addButton.addEventListener('click', () => {
+	addCookie();
+	showCookie();
 });
+
+// window.addEventListener('load', function(){
+// 	filterNameInput.value = '';
+// 	addNameInput.value = '';
+// 	addValueInput.value = '';
+// });
+
