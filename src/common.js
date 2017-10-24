@@ -1,14 +1,20 @@
 let friendsList = document.querySelector('.list-friends');
 let friendsChosenList = document.querySelector('.list-chosen-friends');
 let saveBtn = document.querySelector('.footer-save');
-let friendsArr = [];
-let friendsChosenArr = [];
+let filterForm = document.querySelector('.filter-form');
+let filterInput = document.querySelector('#filter-input-1');
+let filterChosenInput = document.querySelector('#filter-input-2');
+
+let friendsArr = [],
+	friendsChosenArr = [],
+	filteredArr = [],
+	filteredChosenArr = [];
 
 function saveStorage() {
- 	 		localStorage.friendsList = JSON.stringify(friendsArr);
- 	 		localStorage.friendsChosenList = JSON.stringify(friendsChosenArr); // Функцию с аргументами нельзя что-ли передавать? ????????????
- 	 		alert('SAVED');
- 	 }
+ 	localStorage.friendsList = JSON.stringify(friendsArr);
+ 	localStorage.friendsChosenList = JSON.stringify(friendsChosenArr); 
+ 	alert('SAVED');
+}
 
 function renderFriendsInfo(arr, chosenArr) {
 	friendsList.textContent = '';
@@ -16,11 +22,6 @@ function renderFriendsInfo(arr, chosenArr) {
 
 	for (let i = 0; i < arr.length; i++) {
 		let newLi = document.createElement('li');
-
-	//	arr.sort(function(item){
-	//		return item.first_name;
-	//	})
-
 		newLi.dataset.id = arr[i].id; 
 
 		let photo = arr[i].photo_100,
@@ -33,7 +34,6 @@ function renderFriendsInfo(arr, chosenArr) {
 
 	for (let i = 0; i < chosenArr.length; i++) {
 		let newLi = document.createElement('li');
-
 		newLi.dataset.id = chosenArr[i].id; 
 
 		let photo = chosenArr[i].photo_100,
@@ -43,6 +43,10 @@ function renderFriendsInfo(arr, chosenArr) {
  		newLi.innerHTML = `<img class="face" src="${photo}" alt=""><p> ${firstName} ${lastName} </p> <img class="icon" src="img/delete.png"></img>`;
  		friendsChosenList.appendChild(newLi);
 	}
+}
+
+function isMatching(full, chunk) {
+    return (full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1);
 }
 
 function api(method, params) {
@@ -57,7 +61,6 @@ function api(method, params) {
 	});
 }
 
-
 const p = new Promise(function(resolve, reject){
 	VK.init({
 		apiId: 6200315
@@ -70,11 +73,10 @@ const p = new Promise(function(resolve, reject){
 			reject(new Error('Не удалось авторизироваться!'));
 		}
 	}, 8)
-
 });
 
 p
- 	.then(function(){
+	.then(function(){
  		return api('friends.get' , { v: 5.68, fields: 'nickname, photo_100' });
  	}) 
  	.then(function(data){
@@ -82,11 +84,11 @@ p
  			let friendsStorageArr = JSON.parse(localStorage.friendsList),
  				friendsChosenStorageArr = JSON.parse(localStorage.friendsChosenList);
  				
- 				for(let i = 0; i < friendsStorageArr.length; i++) {
+ 				for (let i = 0; i < friendsStorageArr.length; i++) {
  					friendsArr.push(friendsStorageArr[i]);
  				}
 
- 				for(let i = 0; i < friendsChosenStorageArr.length; i++) {
+ 				for (let i = 0; i < friendsChosenStorageArr.length; i++) {
  					friendsChosenArr.push(friendsChosenStorageArr[i]);
  				}
 
@@ -94,41 +96,69 @@ p
 
  		} else {
  			for (let i = 0; i < data.items.length; i++) {
- 			friendsArr.push(data.items[i]);
+ 				friendsArr.push(data.items[i]);
  			}
  			renderFriendsInfo(friendsArr, friendsChosenArr);	
  		}
- 		
- 		
- 	})
- 	
- 	friendsList.addEventListener('click', function(event) {
- 		let target = event.target;
-
- 		if(target.classList.contains('icon')) {
- 			for(let i = 0; i < friendsArr.length; i++) {
- 				 if (friendsArr[i].id === +target.parentElement.dataset.id) {
- 				 	friendsChosenArr.push(friendsArr[i]);
- 				 	friendsArr.splice(i, 1);
- 				 }
- 			}
- 			renderFriendsInfo(friendsArr, friendsChosenArr);
- 		}
  	});
 
- 	friendsChosenList.addEventListener('click', function(event){
- 		let target = event.target;
+friendsList.addEventListener('click', function(event) {
+	// function moveTo(arr, moveToArr) {
+    // 
+	// }
+	let target = event.target;
 
- 		if(target.classList.contains('icon')) {
- 			for(let i = 0; i < friendsChosenArr.length; i++) {
- 				 if (friendsChosenArr[i].id === +target.parentElement.dataset.id) {
- 				 	friendsArr.push(friendsChosenArr[i]);
- 				 	friendsChosenArr.splice(i, 1);
- 				 }
- 			}
- 			renderFriendsInfo(friendsArr, friendsChosenArr);
- 		}
- 	});
+	if (target.classList.contains('icon')) {
+		for (let i = 0; i < friendsArr.length; i++) {
+			 if (friendsArr[i].id === +target.parentElement.dataset.id) {
+			 	friendsChosenArr.push(friendsArr[i]);
+			 	friendsArr.splice(i, 1);
+			 }
+		}
+		renderFriendsInfo(friendsArr, friendsChosenArr);
+	}
+});
 
+friendsChosenList.addEventListener('click', function(event){
+	let target = event.target;
 
- 	 saveBtn.addEventListener('click', saveStorage);
+	if(target.classList.contains('icon')) {
+		for(let i = 0; i < friendsChosenArr.length; i++) {
+			 if (friendsChosenArr[i].id === +target.parentElement.dataset.id) {
+			 	friendsArr.push(friendsChosenArr[i]);
+			 	friendsChosenArr.splice(i, 1);
+			 }
+		}
+		renderFriendsInfo(friendsArr, friendsChosenArr);
+	}
+});
+
+saveBtn.addEventListener('click', saveStorage);
+filterInput.addEventListener('input', (e) => {
+		filteredArr = [];
+		for(let i = 0; i < friendsArr.length; i++) {
+			if(isMatching(friendsArr[i].first_name, filterInput.value) || isMatching(friendsArr[i].last_name, filterInput.value)) {
+				filteredArr.push(friendsArr[i]);
+			}
+		}
+	 if(filterChosenInput.value) {
+	 	renderFriendsInfo(filteredArr, filteredChosenArr);
+	 } else {
+	 	renderFriendsInfo(filteredArr, friendsChosenArr);
+	 }
+});
+
+filterChosenInput.addEventListener('input', (e) => {
+		filteredChosenArr = [];
+		for(let i = 0; i < friendsChosenArr.length; i++) {
+			if(isMatching(friendsChosenArr[i].first_name, filterChosenInput.value) || isMatching(friendsChosenArr[i].last_name, filterChosenInput.value)) {
+				filteredChosenArr.push(friendsChosenArr[i]);
+			}
+		}
+		
+		if (filterInput.value) {
+			 renderFriendsInfo(filteredArr, filteredChosenArr);
+		} else {
+			renderFriendsInfo(friendsArr, filteredChosenArr);
+		}	
+});
