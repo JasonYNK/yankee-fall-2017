@@ -58,23 +58,34 @@
 				height: 325px;
 				overflow: auto;
 			}
+			.list-chosen-friends {
+				padding-left: 15px;
+				height: 325px;
+				overflow: auto;
+			}
 			.face {
 				width: 45px;
 				height: 45px;
-				border: 1px solid green;
+				border-radius: 100%;
 				display: inline-block;
 				float: left;
 			}
 			.list-friends li p {
 				font-size: 15px;
 				display: inline-block;
-				float: left;
+				
+				margin-left: 10px;
+			} 
+			.list-chosen-friends li p {
+				font-size: 15px;
+				display: inline-block;
 				margin-left: 10px;
 			} 
 			.icon {
 				float: right;
 				padding-top: 10px; 
 				padding-right: 5px;
+				cursor: pointer;
 				 
 			}
 
@@ -90,4 +101,10 @@
 			padding: 5px 10px;
 			display: inline-block;
 			border-radius: 30px;
+			transition: All 0.5s;
+			cursor: pointer;
+		}
+		.footer-save:hover {
+			background-color: #ccc;
+			color: #000;
 		}
