@@ -20,7 +20,6 @@ function saveStorage() {
 
 function renderFriendsInfo(arr, list) {
 	list.textContent = '';
-//	friendsChosenList.textContent = '';
 
 	for (let i = 0; i < arr.length; i++) {
 		let newLi = document.createElement('li');
@@ -43,22 +42,8 @@ function renderFriendsInfo(arr, list) {
 
  		if (list === friendsChosenList) {
  			newImg.setAttribute('src', 'img/delete.png');
- 		}
- 		
+ 		}	
 	}
-// 
-//	for (let i = 0; i < chosenArr.length; i++) {
-//		let newLi = document.createElement('li');
-//		newLi.setAttribute('class', 'draggable');
-//		newLi.dataset.id = chosenArr[i].id; 
-//
-//		let photo = chosenArr[i].photo_100,
-//			firstName = chosenArr[i].first_name,
-//			lastName = chosenArr[i].last_name;
-
- 	//	newLi.innerHTML = `<img class="face" src="${photo}" alt=""><p> ${firstName} ${lastName} </p> <img class="icon" src="img/delete.png"></img>`;
- 	//	friendsChosenList.appendChild(newLi);
-	
 }
 
 function moveTo(arrFrom, arrTo, firstInput, secondInput, target) {
@@ -68,27 +53,19 @@ function moveTo(arrFrom, arrTo, firstInput, secondInput, target) {
 	 		arrFrom.splice(i, 1);
 	 	}
 	}
-	console.log(arrFrom, arrTo);
-	fillFilteredArr(arrFrom, arrTo, firstInput, secondInput);
+	filteredArr = fillFilteredArr (arrFrom, firstInput);
+	filteredChosenArr = fillFilteredArr (arrTo, secondInput);
 }
 
-function fillFilteredArr (friendsArr, friendsChosenArr, firstInput, secondInput) {
-	filteredArr = [];
-	filteredChosenArr = [];
+function fillFilteredArr (arr, input) {
+	let filteredArr = [];
 
-	for (let i = 0; i < friendsArr.length; i++) {
-		if (isMatching(friendsArr[i].first_name, firstInput.value) || isMatching(friendsArr[i].last_name, firstInput.value)) {
-			filteredArr.push(friendsArr[i]);
+	for (let i = 0; i < arr.length; i++) {
+		if (isMatching(arr[i].first_name, input.value) || isMatching(arr[i].last_name, input.value)) {
+			filteredArr.push(arr[i]);
 		}
 	}
-
-	for (let i = 0; i < friendsChosenArr.length; i++) {
-		if (isMatching(friendsChosenArr[i].first_name, secondInput.value) || isMatching(friendsChosenArr[i].last_name, secondInput.value)) {
-			filteredChosenArr.push(friendsChosenArr[i]);
-		}
-	}
-	console.log(1);
-	
+	return filteredArr;
 }
 
 function isMatching(full, chunk) {
@@ -129,18 +106,9 @@ p
  		if('friendsList' in localStorage && 'friendsChosenList' in localStorage) {
  			friendsArr = JSON.parse(localStorage.friendsList);
  			friendsChosenArr = JSON.parse(localStorage.friendsChosenList);
- 				
- 		//		for (let i = 0; i < friendsStorageArr.length; i++) {
- 		//			friendsArr.push(friendsStorageArr[i]);
- 		//		}
-//
- 		//		for (let i = 0; i < friendsChosenStorageArr.length; i++) {
- 		//			friendsChosenArr.push(friendsChosenStorageArr[i]);
- 		//		}
 
- 				renderFriendsInfo(friendsArr, friendsList);
- 				renderFriendsInfo(friendsChosenArr, friendsChosenList);
-
+ 			renderFriendsInfo(friendsArr, friendsList);
+ 			renderFriendsInfo(friendsChosenArr, friendsChosenList);
  		} else {
  			for (let i = 0; i < data.items.length; i++) {
  				friendsArr.push(data.items[i]);
@@ -171,18 +139,18 @@ friendsChosenList.addEventListener('click', function(event){
 });
 
 saveBtn.addEventListener('click', saveStorage);
-filterInput.addEventListener('input', (e) => {
-	fillFilteredArr (friendsArr, friendsChosenArr, filterInput, filterChosenInput);
-	renderFriendsInfo(filteredArr, friendsList);
 
+filterInput.addEventListener('input', (e) => {
+	filteredArr = fillFilteredArr (friendsArr, filterInput);
+	renderFriendsInfo(filteredArr, friendsList);
 });
 
 filterChosenInput.addEventListener('input', (e) => {
-	fillFilteredArr(friendsArr, friendsChosenArr, filterInput, filterChosenInput);
+	filteredChosenArr = fillFilteredArr (friendsChosenArr,filterChosenInput);
 	renderFriendsInfo(filteredChosenArr, friendsChosenList);
 });
 
-
+// METKA!
 
 // document.addEventListener('mousedown', (e) => {
 // 	if (e.which != 1) { 
