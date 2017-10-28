@@ -18,9 +18,9 @@ function saveStorage() {
  	alert('SAVED');
 }
 
-function renderFriendsInfo(arr, chosenArr) {
-	friendsList.textContent = '';
-	friendsChosenList.textContent = '';
+function renderFriendsInfo(arr, list) {
+	list.textContent = '';
+//	friendsChosenList.textContent = '';
 
 	for (let i = 0; i < arr.length; i++) {
 		let newLi = document.createElement('li');
@@ -31,22 +31,34 @@ function renderFriendsInfo(arr, chosenArr) {
 			firstName = arr[i].first_name,
 			lastName = arr[i].last_name;
 
- 		newLi.innerHTML = `<img class="face" src="${photo}" alt=""><p> ${firstName} ${lastName} </p> <img class="icon" src="img/add.png"></img>`;
- 		friendsList.appendChild(newLi);
+ 		newLi.innerHTML = `<img class="face" src="${photo}" alt=""><p> ${firstName} ${lastName} </p>`;
+ 		list.appendChild(newLi);
+ 		let newImg = document.createElement('img');
+ 		newImg.setAttribute('class', 'icon');
+ 		newLi.appendChild(newImg);
+
+ 		if (list === friendsList) {
+ 			newImg.setAttribute('src', 'img/add.png');
+ 		}
+
+ 		if (list === friendsChosenList) {
+ 			newImg.setAttribute('src', 'img/delete.png');
+ 		}
+ 		
 	}
+// 
+//	for (let i = 0; i < chosenArr.length; i++) {
+//		let newLi = document.createElement('li');
+//		newLi.setAttribute('class', 'draggable');
+//		newLi.dataset.id = chosenArr[i].id; 
+//
+//		let photo = chosenArr[i].photo_100,
+//			firstName = chosenArr[i].first_name,
+//			lastName = chosenArr[i].last_name;
 
-	for (let i = 0; i < chosenArr.length; i++) {
-		let newLi = document.createElement('li');
-		newLi.setAttribute('class', 'draggable');
-		newLi.dataset.id = chosenArr[i].id; 
-
-		let photo = chosenArr[i].photo_100,
-			firstName = chosenArr[i].first_name,
-			lastName = chosenArr[i].last_name;
-
- 		newLi.innerHTML = `<img class="face" src="${photo}" alt=""><p> ${firstName} ${lastName} </p> <img class="icon" src="img/delete.png"></img>`;
- 		friendsChosenList.appendChild(newLi);
-	}
+ 	//	newLi.innerHTML = `<img class="face" src="${photo}" alt=""><p> ${firstName} ${lastName} </p> <img class="icon" src="img/delete.png"></img>`;
+ 	//	friendsChosenList.appendChild(newLi);
+	
 }
 
 function moveTo(arrFrom, arrTo, firstInput, secondInput, target) {
@@ -56,6 +68,7 @@ function moveTo(arrFrom, arrTo, firstInput, secondInput, target) {
 	 		arrFrom.splice(i, 1);
 	 	}
 	}
+	console.log(arrFrom, arrTo);
 	fillFilteredArr(arrFrom, arrTo, firstInput, secondInput);
 }
 
@@ -74,8 +87,8 @@ function fillFilteredArr (friendsArr, friendsChosenArr, firstInput, secondInput)
 			filteredChosenArr.push(friendsChosenArr[i]);
 		}
 	}
-
-	renderFriendsInfo(filteredArr, filteredChosenArr);
+	console.log(1);
+	
 }
 
 function isMatching(full, chunk) {
@@ -114,24 +127,26 @@ p
  	}) 
  	.then(function(data){
  		if('friendsList' in localStorage && 'friendsChosenList' in localStorage) {
- 			let friendsStorageArr = JSON.parse(localStorage.friendsList),
- 				friendsChosenStorageArr = JSON.parse(localStorage.friendsChosenList);
+ 			friendsArr = JSON.parse(localStorage.friendsList);
+ 			friendsChosenArr = JSON.parse(localStorage.friendsChosenList);
  				
- 				for (let i = 0; i < friendsStorageArr.length; i++) {
- 					friendsArr.push(friendsStorageArr[i]);
- 				}
+ 		//		for (let i = 0; i < friendsStorageArr.length; i++) {
+ 		//			friendsArr.push(friendsStorageArr[i]);
+ 		//		}
+//
+ 		//		for (let i = 0; i < friendsChosenStorageArr.length; i++) {
+ 		//			friendsChosenArr.push(friendsChosenStorageArr[i]);
+ 		//		}
 
- 				for (let i = 0; i < friendsChosenStorageArr.length; i++) {
- 					friendsChosenArr.push(friendsChosenStorageArr[i]);
- 				}
-
- 				renderFriendsInfo(friendsArr, friendsChosenArr);
+ 				renderFriendsInfo(friendsArr, friendsList);
+ 				renderFriendsInfo(friendsChosenArr, friendsChosenList);
 
  		} else {
  			for (let i = 0; i < data.items.length; i++) {
  				friendsArr.push(data.items[i]);
  			}
- 			renderFriendsInfo(friendsArr, friendsChosenArr);	
+ 			renderFriendsInfo(friendsArr, friendsList);
+ 			renderFriendsInfo(friendsChosenArr, friendsChosenList);
  		}
  	});
 
@@ -140,7 +155,8 @@ friendsList.addEventListener('click', function(event) {
 
 	if (target.classList.contains('icon')) {
 		moveTo(friendsArr, friendsChosenArr, filterInput, filterChosenInput, target);
-		renderFriendsInfo(filteredArr, filteredChosenArr);
+		renderFriendsInfo(filteredArr, friendsList);
+		renderFriendsInfo(filteredChosenArr, friendsChosenList);
 	}
 });
 
@@ -149,18 +165,21 @@ friendsChosenList.addEventListener('click', function(event){
 
 	if (target.classList.contains('icon')) {
 		moveTo(friendsChosenArr, friendsArr, filterChosenInput, filterInput, target);
-		renderFriendsInfo(filteredChosenArr, filteredArr);
+		renderFriendsInfo(filteredChosenArr, friendsList);
+		renderFriendsInfo(filteredArr, friendsChosenList);
 	}
 });
 
 saveBtn.addEventListener('click', saveStorage);
 filterInput.addEventListener('input', (e) => {
 	fillFilteredArr (friendsArr, friendsChosenArr, filterInput, filterChosenInput);
+	renderFriendsInfo(filteredArr, friendsList);
 
 });
 
 filterChosenInput.addEventListener('input', (e) => {
 	fillFilteredArr(friendsArr, friendsChosenArr, filterInput, filterChosenInput);
+	renderFriendsInfo(filteredChosenArr, friendsChosenList);
 });
 
 
