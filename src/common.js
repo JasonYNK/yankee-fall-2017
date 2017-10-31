@@ -10,7 +10,7 @@ let friendsArr = null,
 	filteredArr = [],
 	filteredChosenArr = [];
 
-let dragObject = {};
+
 
 function saveStorage() {
  	localStorage.friendsList = JSON.stringify(friendsArr);
@@ -152,67 +152,76 @@ filterChosenInput.addEventListener('input', (e) => {
 
 // DRAG & DROP <====== !!!!!!!!
 
-document.addEventListener('mousedown', (e) => {
- 	if (e.which != 1) { 
+let dragObject = {};
+
+document.addEventListener('mousedown', (event) => {
+ 	if (event.which != 1) { 
      	 return; 
    	}
- 
-   	let elem = e.target.closest('.draggable');
+
+   	let elem = event.target.closest('.draggable');
+
    	if (!elem) return;
  
    	dragObject.elem = elem;
- 
-  
-   	dragObject.downX = e.pageX;
-   	dragObject.downY = e.pageY;
-   	//console.log(dragObject);
+   	dragObject.downX = event.pageX;
+   	dragObject.downY = event.pageY;
+   	
  
  });
  
- document.addEventListener('mouseup', (event) => {
- 	
- 	if (dragObject.avatar) {
- 		let draggedElement = document.querySelector('.dragged');
- 		document.body.removeChild(draggedElement);
- 		console.log('TRUEdsfsd');
- 	}
- 	let target = event.target;
- 	console.log(target);
- 	dragObject = {};
-
- 	if(findDroppable(event)){
- 		console.log(target);
- 		moveTo(friendsArr, friendsChosenArr, filterInput, filterChosenInput, target.firstChildElement);
-		renderFriendsInfo(filteredArr, friendsList);
-		renderFriendsInfo(filteredChosenArr, friendsChosenList);
- 		console.log('TRUE');
- 	}
- 	
- 	
- });
-document.addEventListener('mousemove', (e) => {
+ 
+document.addEventListener('mousemove', (event) => {
+	event.preventDefault();
 
 	if (!dragObject.elem) return;
+
 	if (!dragObject.avatar) {
+		let moveX = event.pageX - dragObject.downX;
+		let moveY = event.pageY - dragObject.downY;
+
+		dragObject.avatar = dragObject.elem.cloneNode(true);
+
+		let coords = getCoords(dragObject.elem);
+		
+
+		dragObject.shiftX = dragObject.downX - coords.left;
+		dragObject.shiftY = dragObject.downY - coords.top;
+
 		startDrag();
 	}
 	
-	dragObject.avatar.style.left = e.pageX + 'px';
-  	dragObject.avatar.style.top = e.pageY + 'px';
+		dragObject.avatar.style.left = event.pageX - dragObject.shiftX +'px';
+  		dragObject.avatar.style.top = event.pageY - dragObject.shiftY +'px';
 	
 });
 
+document.addEventListener('mouseup', (event) => {
+	let draggedElement = document.querySelector('.dragged');
 
-function getCoords(elem) {   
-  var box = elem.getBoundingClientRect();
+	if(findDroppable(event)){
+ 		console.log('TRUE');
+ 		let pickedEl = draggedElement.firstElementChild;
+ 		moveTo(friendsArr, friendsChosenArr, filterInput, filterChosenInput, pickedEl);
+		renderFriendsInfo(filteredArr, friendsList);
+		renderFriendsInfo(filteredChosenArr, friendsChosenList);
+ 	}
+
+ 	if (dragObject.avatar) {	
+ 		document.body.removeChild(draggedElement);
+ 	}
+ 	dragObject = {};
+ });
+function getCoords(target) {   
+  var box = target.getBoundingClientRect();
+
   return {
     top: box.top + pageYOffset,
     left: box.left + pageXOffset
   };
 }
 
-function startDrag() {
-	dragObject.avatar = dragObject.elem.cloneNode(true);
+function startDrag(e) {
 	dragObject.avatar.style = "position: absolute; z-index: 9999;";
 	dragObject.avatar.setAttribute('class', 'dragged');
 	document.body.appendChild(dragObject.avatar);

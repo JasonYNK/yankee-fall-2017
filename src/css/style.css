@@ -57,11 +57,13 @@
 				padding-left: 15px;
 				height: 325px;
 				overflow: auto;
+				cursor: pointer;
 			}
 			.list-chosen-friends {
 				padding-left: 15px;
 				height: 325px;
 				overflow: auto;
+				cursor: pointer;
 			}
 			.face {
 				width: 45px;
@@ -73,7 +75,6 @@
 			.list-friends li p {
 				font-size: 15px;
 				display: inline-block;
-				
 				margin-left: 10px;
 			} 
 			.list-chosen-friends li p {
