@@ -65,6 +65,18 @@
 				overflow: auto;
 				cursor: pointer;
 			}
+			.cloned-li {
+				list-style-type: none;
+				padding: 7px;
+			}
+				.cloned-li p {
+					font-size: 15px;
+					display: inline-block;
+					margin-left: 10px;
+				}
+				.cloned-li img:last-of-type {
+					display: none;
+				}			
 			.face {
 				width: 45px;
 				height: 45px;
@@ -72,11 +84,19 @@
 				display: inline-block;
 				float: left;
 			}
+			.list-friends li {
+				list-style-type: none;
+				padding: 7px;
+			}
 			.list-friends li p {
 				font-size: 15px;
 				display: inline-block;
 				margin-left: 10px;
 			} 
+			.list-chosen-friends li {
+				list-style-type: none;
+				padding: 7px;
+			}
 			.list-chosen-friends li p {
 				font-size: 15px;
 				display: inline-block;

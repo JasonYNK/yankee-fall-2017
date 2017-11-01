@@ -160,13 +160,14 @@ document.addEventListener('mousedown', (event) => {
    	}
 
    	let elem = event.target.closest('.draggable');
+   
 
    	if (!elem) return;
- 
+ 		dragObject.width = elem.clientWidth;
    	dragObject.elem = elem;
    	dragObject.downX = event.pageX;
    	dragObject.downY = event.pageY;
-   	
+   	dragObject.pickedElement = event.target.closest('.draggable');
  
  });
  
@@ -181,6 +182,7 @@ document.addEventListener('mousemove', (event) => {
 		let moveY = event.pageY - dragObject.downY;
 
 		dragObject.avatar = dragObject.elem.cloneNode(true);
+		
 
 		let coords = getCoords(dragObject.elem);
 		
@@ -190,7 +192,7 @@ document.addEventListener('mousemove', (event) => {
 
 		startDrag();
 	}
-	
+		
 		dragObject.avatar.style.left = event.pageX - dragObject.shiftX +'px';
   		dragObject.avatar.style.top = event.pageY - dragObject.shiftY +'px';
 	
@@ -200,11 +202,23 @@ document.addEventListener('mouseup', (event) => {
 	let draggedElement = document.querySelector('.dragged');
 
 	if(findDroppable(event)){
- 		console.log('TRUE');
- 		let pickedEl = draggedElement.firstElementChild;
- 		moveTo(friendsArr, friendsChosenArr, filterInput, filterChosenInput, pickedEl);
-		renderFriendsInfo(filteredArr, friendsList);
-		renderFriendsInfo(filteredChosenArr, friendsChosenList);
+
+		let pickedElement = dragObject.pickedElement.firstElementChild;
+		console.log(pickedElement.parentElement.parentElement);
+		if (pickedElement.parentElement.parentElement.classList.contains('list-friends')) {
+			moveTo(friendsArr, friendsChosenArr, filterInput, filterChosenInput, pickedElement);
+			renderFriendsInfo(filteredArr, friendsList);
+			renderFriendsInfo(filteredChosenArr, friendsChosenList);
+			console.log('right');
+		} else {
+			moveTo(friendsChosenArr, friendsArr, filterChosenInput, filterInput, pickedElement);
+			renderFriendsInfo(filteredChosenArr, friendsList);
+			renderFriendsInfo(filteredArr, friendsChosenList);
+			console.log('else');
+		}
+
+		
+ 		
  	}
 
  	if (dragObject.avatar) {	
@@ -222,13 +236,16 @@ function getCoords(target) {
 }
 
 function startDrag(e) {
-	dragObject.avatar.style = "position: absolute; z-index: 9999;";
-	dragObject.avatar.setAttribute('class', 'dragged');
+	dragObject.avatar.style = "position: absolute; z-index: 9999;" + dragObject.width + 'px; background-color: #F0F0F0;';
+	dragObject.avatar.setAttribute('class', 'dragged cloned-li');
+	
 	document.body.appendChild(dragObject.avatar);
 }
 
 function findDroppable(event) {
+	dragObject.avatar.hidden = true;
 	var elem = document.elementFromPoint(event.clientX, event.clientY);
+	dragObject.avatar.hidden = false;
 
 	return elem.closest('.droppable');
 }
