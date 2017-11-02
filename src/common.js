@@ -158,17 +158,20 @@ document.addEventListener('mousedown', (event) => {
  	if (event.which != 1) { 
      	 return; 
    	}
+   //	console.log(draggedElement);
+  	//if (draggedElement) {
+  	//	return;
+  	//}
 
    	let elem = event.target.closest('.draggable');
    
 
    	if (!elem) return;
  		dragObject.width = elem.clientWidth;
-   	dragObject.elem = elem;
-   	dragObject.downX = event.pageX;
-   	dragObject.downY = event.pageY;
-   	dragObject.pickedElement = event.target.closest('.draggable');
- 
+	   	dragObject.elem = elem;
+	   	dragObject.downX = event.pageX;
+	   	dragObject.downY = event.pageY;
+	   	dragObject.pickedElement = event.target.closest('.draggable');
  });
  
  
@@ -180,6 +183,10 @@ document.addEventListener('mousemove', (event) => {
 	if (!dragObject.avatar) {
 		let moveX = event.pageX - dragObject.downX;
 		let moveY = event.pageY - dragObject.downY;
+
+		if ( Math.abs(moveX) < 10 && Math.abs(moveY) < 10 ) {
+      		return; 
+    	}
 
 		dragObject.avatar = dragObject.elem.cloneNode(true);
 		
@@ -199,27 +206,29 @@ document.addEventListener('mousemove', (event) => {
 });
 
 document.addEventListener('mouseup', (event) => {
+
 	let draggedElement = document.querySelector('.dragged');
-
-	if(findDroppable(event)){
-
-		let pickedElement = dragObject.pickedElement.firstElementChild;
-		console.log(pickedElement.parentElement.parentElement);
+	
+	if(!dragObject.avatar) {
+		
+		return;
+	} 
+	console.log(event.target);
+	
+	let pickedElement = dragObject.pickedElement.firstElementChild;
+	if (findDroppable(event) === 2){
 		if (pickedElement.parentElement.parentElement.classList.contains('list-friends')) {
 			moveTo(friendsArr, friendsChosenArr, filterInput, filterChosenInput, pickedElement);
 			renderFriendsInfo(filteredArr, friendsList);
 			renderFriendsInfo(filteredChosenArr, friendsChosenList);
-			console.log('right');
-		} else {
-			moveTo(friendsChosenArr, friendsArr, filterChosenInput, filterInput, pickedElement);
-			renderFriendsInfo(filteredChosenArr, friendsList);
-			renderFriendsInfo(filteredArr, friendsChosenList);
-			console.log('else');
-		}
-
-		
- 		
+		} 
  	}
+
+ 	if (findDroppable(event) === 1) {
+ 		moveTo(friendsChosenArr, friendsArr, filterChosenInput, filterInput, pickedElement);
+		renderFriendsInfo(filteredChosenArr, friendsList);
+		renderFriendsInfo(filteredArr, friendsChosenList);
+ 	} 
 
  	if (dragObject.avatar) {	
  		document.body.removeChild(draggedElement);
@@ -247,5 +256,11 @@ function findDroppable(event) {
 	var elem = document.elementFromPoint(event.clientX, event.clientY);
 	dragObject.avatar.hidden = false;
 
-	return elem.closest('.droppable');
+	if (elem.closest('.droppable-zone1')) {
+		return 1;
+	} 
+
+	if (elem.closest('.droppable-zone2')) {
+		return 2;
+	}
 }
