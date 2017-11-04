@@ -158,27 +158,25 @@ document.addEventListener('mousedown', (event) => {
  	if (event.which != 1) { 
      	 return; 
    	}
-   //	console.log(draggedElement);
-  	//if (draggedElement) {
-  	//	return;
-  	//}
 
    	let elem = event.target.closest('.draggable');
    
-
    	if (!elem) return;
- 		dragObject.width = elem.clientWidth;
-	   	dragObject.elem = elem;
-	   	dragObject.downX = event.pageX;
-	   	dragObject.downY = event.pageY;
-	   	dragObject.pickedElement = event.target.closest('.draggable');
+
+ 	dragObject.width = elem.clientWidth;
+	dragObject.elem = elem;
+	dragObject.downX = event.pageX;
+	dragObject.downY = event.pageY;
+	dragObject.pickedElement = event.target.closest('.draggable');
  });
  
  
 document.addEventListener('mousemove', (event) => {
 	event.preventDefault();
 
-	if (!dragObject.elem) return;
+	if (!dragObject.elem) {
+		return;
+	} 
 
 	if (!dragObject.avatar) {
 		let moveX = event.pageX - dragObject.downX;
@@ -190,30 +188,25 @@ document.addEventListener('mousemove', (event) => {
 
 		dragObject.avatar = dragObject.elem.cloneNode(true);
 		
-
 		let coords = getCoords(dragObject.elem);
 		
-
 		dragObject.shiftX = dragObject.downX - coords.left;
 		dragObject.shiftY = dragObject.downY - coords.top;
 
 		startDrag();
 	}
 		
-		dragObject.avatar.style.left = event.pageX - dragObject.shiftX +'px';
-  		dragObject.avatar.style.top = event.pageY - dragObject.shiftY +'px';
-	
+	dragObject.avatar.style.left = event.pageX - dragObject.shiftX +'px';
+  	dragObject.avatar.style.top = event.pageY - dragObject.shiftY +'px';
 });
 
 document.addEventListener('mouseup', (event) => {
-
 	let draggedElement = document.querySelector('.dragged');
 	
-	if(!dragObject.avatar) {
-		
+	if (!dragObject.avatar) {
+		dragObject.elem = false;
 		return;
 	} 
-	console.log(event.target);
 	
 	let pickedElement = dragObject.pickedElement.firstElementChild;
 	if (findDroppable(event) === 2){
@@ -233,15 +226,16 @@ document.addEventListener('mouseup', (event) => {
  	if (dragObject.avatar) {	
  		document.body.removeChild(draggedElement);
  	}
+
  	dragObject = {};
  });
 function getCoords(target) {   
-  var box = target.getBoundingClientRect();
+	var box = target.getBoundingClientRect();
 
-  return {
-    top: box.top + pageYOffset,
-    left: box.left + pageXOffset
-  };
+	return {
+   		top: box.top + pageYOffset,
+   		left: box.left + pageXOffset
+	};
 }
 
 function startDrag(e) {
