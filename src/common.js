@@ -5,10 +5,10 @@ let filterForm = document.querySelector('.filter-form');
 let filterInput = document.querySelector('#filter-input-1');
 let filterChosenInput = document.querySelector('#filter-input-2');
 
-let friendsArr = null,
-	friendsChosenArr = null,
-	filteredArr = [],
-	filteredChosenArr = [];
+let friendsArr = [],
+	friendsChosenArr = [],
+	filteredArr = null,
+	filteredChosenArr = null;
 
 
 
@@ -204,7 +204,7 @@ document.addEventListener('mouseup', (event) => {
 	let draggedElement = document.querySelector('.dragged');
 	
 	if (!dragObject.avatar) {
-		dragObject.elem = false;
+		dragObject.elem = null;
 		return;
 	} 
 	
