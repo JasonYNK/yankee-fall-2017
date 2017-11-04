@@ -1,43 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="css/style.css">
-	<script src="http://vk.com/js/api/openapi.js" type="text/javascript"></script>
-	<title>Friends-filter</title>
-</head>
-<body>
-<div class="container">
-	<div class="title clearfix">
-		<h1 class="title-h1">Выберите друзей</h1>
-		<span class="title-close">X</span>
-	</div>
-	<div class="filter">
-		<form class="filter-form" action="">
-			<input id="filter-input-1" class="filter-input" type="text" placeholder="Начните вводить имя друга">
-			<input id="filter-input-2" class="filter-input" type="text" placeholder="Название">
-		</form>
-	</div>
-	<div class="container-list">
-		<div class="list droppable-zone1">
-			<p class="list-title">Ваши друзья</p>
-			<ul class="list-friends clearfix" data-list="firstList">
-				<li>
-					<!-- li here -->
-				</li>
-			</ul>
-		</div>
-		<div class="list droppable-zone2">
-			<p class="list-title">Ваши друзья</p>
-			<ul class="list-chosen-friends" data-list="secondList">
-				<!-- li here -->
-			</ul>
-		</div>
-	</div>
-	<div class="footer">
-		<div class="footer-save">Сохранить</div>
-	</div>
-</div>
-	<script type="text/javascript" src="common.js"></script>
-</body>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <div id="map"></div>
+    <script type="text/javascript" src="common.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCHEpXx2ajCdRcPRu1LM8wCdiEJjxO20oE&callback=initMap" async defer></script>
+  </body>
 </html>
