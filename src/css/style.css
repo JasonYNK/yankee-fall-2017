@@ -1,3 +1,13 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
   #map {
         height: 100%;
       }
@@ -6,5 +16,110 @@
         height: 100%;
         margin: 0;
         padding: 0;
+        position: relative;
       }
    
+	.pop-up {
+		position: absolute;
+		display: none;
+		z-index: 100;
+		background-color: #fff; 
+		top: 0;
+		left: 0;
+		width: 380px;
+		font-size: 0;
+		box-sizing: border-box;
+		padding-bottom: 10px;
+		border-radius: 10px;
+	}
+		.pop-up-address {
+			border-radius: 10px 10px 0 0;
+			background-color: #ff8663; 
+			color: #fff;
+			padding: 10px;
+			box-sizing: border-box;
+			font-size: 18px;
+			cursor: pointer;
+		}
+			.pop-up-icon-marker {
+				float: left;
+			}	
+			.pop-up-text {
+				float: left;
+				margin: 0;
+				margin-left: 8px;
+				font-size: 15px;
+				font-weight: bold;
+			}
+			.pop-up-close {
+				float: right;
+				cursor: pointer;
+			}
+		.pop-up-review {
+			font-size: 16px;
+			padding: 10px;
+			box-sizing: border-box;
+		}
+			.pop-up-review-name {
+				font-weight: bold;
+				display: inline-block;
+				margin: 0;
+			}
+			.pop-up-review-place {
+				color: #aaa;
+				display: inline-block;
+				margin-left: 10px;
+				
+			}
+				.pop-up-review-place span {
+				margin-left: 10px;
+			}
+			.pop-up-review-text {
+				display: block;
+				margin: 0;
+			}
+		.pop-up-myreview {
+			color: #ff8663;
+			font-size: 16px;
+			font-weight: bold;
+			text-transform: uppercase;
+			padding: 10px;
+			box-sizing: border-box;
+		}
+			.pop-up-myreview-form {
+				padding-right: 10px;
+				padding-left: 10px; 
+				box-sizing: border-box;
+			}
+				.pop-up-myreview-form input {
+					border-radius: 30px;
+					padding: 5px 10px;
+					box-sizing: border-box;
+					margin-bottom: 16px;
+					width: 100%;
+					outline: none;
+				}
+				.pop-up-myreview-form textarea {
+					width: 100%;
+					border-radius: 16px;
+					height: 130px;
+					padding: 5px 10px;
+					box-sizing: border-box;
+					resize: none;
+					outline: none;
+					margin-bottom: 15px;
+				}
+			.pop-up-addbtn {
+				border-radius: 8px;
+				border: none;
+				display: block;
+				font-size: 12px;
+				color: #fff;
+				background-color: #ff8663; 
+				padding: 5px 15px;
+				box-sizing: border-box;
+				margin-right: 10px;
+				margin-left: auto;
+				cursor: pointer;
+				outline: none;
+			}
