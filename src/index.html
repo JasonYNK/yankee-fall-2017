@@ -10,19 +10,18 @@
     <div class="pop-up">
       <div class="pop-up-address clearfix">
         <span class="pop-up-icon-marker fa fa-map-marker"></span>
-        <p class="pop-up-text">New York city somewhere avenu</p>
+        <p class="pop-up-location"></p>
         <span class="pop-up-close fa fa-times"></span>
       </div>
       <div class="pop-up-review">
-        <p class="pop-up-review-name">svetlana</p>
-        <p class="pop-up-review-place">Шоколадница<span>13.12.2015</span></p>
-        <p class="pop-up-review-text">Очень хорошее место!</p>
+        <p class="pop-up-review-noreviews">Отзывов пока нету!</p>
+        <!-- reviews here -->
       </div>
       <p class="pop-up-myreview">Ваш отзыв</p>
       <form class="pop-up-myreview-form" action="" method="post">
-        <input type="text" placeholder="Ваше имя">
-        <input type="text" placeholder="Укажите место">
-        <textarea placeholder="Поделитесь впечатлениями"></textarea>>
+        <input data-review="name" type="text" placeholder="Ваше имя">
+        <input data-review="place"  type="text" placeholder="Укажите место">
+        <textarea data-review="desc" placeholder="Поделитесь впечатлениями"></textarea>>
       </form>
       <button class="pop-up-addbtn">Добавить</button>
     </div>

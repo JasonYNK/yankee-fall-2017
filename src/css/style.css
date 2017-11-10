@@ -44,11 +44,11 @@
 			.pop-up-icon-marker {
 				float: left;
 			}	
-			.pop-up-text {
+			.pop-up-location {
 				float: left;
 				margin: 0;
 				margin-left: 8px;
-				font-size: 15px;
+				font-size: 12px;
 				font-weight: bold;
 			}
 			.pop-up-close {
@@ -59,6 +59,7 @@
 			font-size: 16px;
 			padding: 10px;
 			box-sizing: border-box;
+			height: 150px;
 		}
 			.pop-up-review-name {
 				font-weight: bold;
@@ -69,7 +70,6 @@
 				color: #aaa;
 				display: inline-block;
 				margin-left: 10px;
-				
 			}
 				.pop-up-review-place span {
 				margin-left: 10px;
@@ -77,6 +77,9 @@
 			.pop-up-review-text {
 				display: block;
 				margin: 0;
+			}
+			.pop-up-review-noreviews {
+
 			}
 		.pop-up-myreview {
 			color: #ff8663;
