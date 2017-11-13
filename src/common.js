@@ -8,13 +8,17 @@ let myReview = document.querySelector('.pop-up-myreview');
 let noReviews = document.querySelector('.pop-up-review-noreviews');
 let popUpLocation = document.querySelector('.pop-up-location');
 let myReviewForm = document.querySelector('.pop-up-myreview-form');
+let nameReview = document.querySelector('#nameReview');
+let placeReview = document.querySelector('#placeReview');
+let descReview = document.querySelector('#descReview');
 let popUpSwitch = 0; // pop-up closed, 1 - open
 let dragObject = {};
 let reviews = [];
+let markers = [];
 let review = {};
 let lat;
 let lng;
-let geocoder
+let geocoder;
 
 function showPopUp(x,y) {
 	popUp.style.display = 'block';
@@ -37,10 +41,53 @@ function fillReviewObj(obj) {
 	reviews.push(copiedObj); 
 }
 
+function formatDate(date) {
+    var dd = date.getDate();
 
-let markers = [
-	{lat: 40.005, lng: 32.055},   // Example
-];
+    if (dd < 10) dd = '0' + dd;
+
+    var mm = date.getMonth() + 1;
+
+    if (mm < 10) mm = '0' + mm;
+
+    var yy = date.getFullYear();
+    var hh = date.getHours();
+    var mi = date.getMinutes();
+    var ss = date.getSeconds();
+    
+    return dd + '.' + mm + '.' + yy + ' ' + hh + ':' + mi + ':' + ss;
+}
+
+function addMarker() {
+	markers = [];
+	for (let i = 0; i < reviews.length; i++) {
+		let lat = +reviews[i].lat.toFixed(3);
+		let lng = +reviews[i].lng.toFixed(3);
+		marker = new google.maps.Marker({
+   	 		position: {lat: lat, lng: lng},
+    		map: map
+		});
+
+		markers.push(marker);
+	}
+}
+
+function createCluster() {
+	let markerCluster = new MarkerClusterer(
+		map,
+	 	markers,
+        {	
+        	zoomOnClick: false,
+        	imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        }
+    );
+}
+
+
+
+if ('reviews' in localStorage) {
+	reviews = JSON.parse(localStorage.reviews);
+}
 
 function initMap() {
 	map = new google.maps.Map(document.getElementById('map'), {
@@ -49,10 +96,9 @@ function initMap() {
 	});
 	geocoder = new google.maps.Geocoder;
 
-	
-	
 	addMarker();
-
+	
+	createCluster();
 	map.addListener('click', (event) => {
 		let xAxis = event.pixel.x;
 		let yAxis = event.pixel.y;
@@ -65,76 +111,42 @@ function initMap() {
 		lat = event.latLng.lat();
 		lng = event.latLng.lng();
 		geocoder.geocode({'location': latlng}, function(results, status){
-		if (status === 'OK') {
-			if (results[0]) {
-				review.location = results[0].formatted_address;
-				popUpLocation.textContent = review.location;
-				showPopUp(xAxis, yAxis);
+			if (status === 'OK') {
+				if (results[0]) {
+					review.location = results[0].formatted_address;
+					popUpLocation.textContent = review.location;
+					showPopUp(xAxis, yAxis);
+					popUpReview.innerHTML = '<p class="pop-up-review-noreviews">Отзывов пока нету!</p>';
+				}
+	
+			} else {
+				alert('Error ' + status);
 			}
-
-		} else {
-			alert('Error ' + status);
-		}
-	});
-
-//	for (let i = 0; i < reviews.length; i++) {
-//		if (event.latLng.lat() === reviews[i].lat) {
-//			console.log('Hit the marker!!')
-//		}
-//	}
-
-		
-	});
+		});	
+	});  
 }
 
-function addMarker() {
-	for (let i = 0; i < markers.length; i++) {
-		marker = new google.maps.Marker({
-   	 		position: markers[i],
-    		map: map
-		});
-	}
-}
+
 
 document.addEventListener('click', (event) => {
 	let target = event.target;
-	//console.log(target);
 	let checkClosePopUp = target.classList.contains('pop-up-close');
 	if (checkClosePopUp) {
 		hidePopUp();
 	}
 });
 
-popUp.addEventListener('input', (event) => {
-	let target = event.target;
-	//review.test = {
-//
-	//};
-
-	if (target.dataset.review === 'name') {
-		// review.name = target.value;
-		review.inputDate = {
-			name: target.value
-		};
-		console.log(review);
-	};
-
-	if (target.dataset.review === 'place') {
-		review.place = target.value;
-	};
-
-	if (target.dataset.review === 'desc') {
-		review.desc = target.value;
-	};
-
-	
-});
-
 addReviewBtn.addEventListener('click', (event) => {
-	let test = new Date();
-	//let h = test.getHours();
-	//let m = 
-	review.date = test;
+
+	let time = new Date();
+	time = formatDate(time);
+	review.inputData = {
+		name: nameReview.value,
+		place: placeReview.value,
+		desc: descReview.value
+	}
+
+	review.date = time;
 	review.lat = lat;
 	review.lng = lng;
 	console.log(review);
@@ -143,25 +155,23 @@ addReviewBtn.addEventListener('click', (event) => {
 			myReviewForm.children[i].value = '';
 		}
 
-	if (!review.inputDate.name || !review.place || !review.desc) {
+	if (!review.inputData.name || !review.inputData.place || !review.inputData.desc) {
 		alert('Заполните поля!');
 	} else {
-		markers.push({lat: lat, lng: lng});
 
-		if (noReviews !== null) {
-			popUpReview.removeChild(noReviews);
-			noReviews = null;
+		if (noReviews !== '') {
+			popUpReview.textContent = '';
 		}
 		
-		addMarker();
-
 		fillReviewObj(review);
 
+		addMarker();
+		createCluster();
+
 		let reviewComment = document.createElement('div');
-		reviewComment.innerHTML = `<p class="pop-up-review-name">${review.name}</p><p class="pop-up-review-place">${review.place}<span>${review.date}</span></p><p class="pop-up-review-text">${review.desc}!</p>`;
+		reviewComment.innerHTML = `<p class="pop-up-review-name">${review.inputData.name}</p><p class="pop-up-review-place">${review.inputData.place}<span>${review.date}</span></p><p class="pop-up-review-text">${review.inputData.desc}!</p>`;
 		popUpReview.appendChild(reviewComment);
 
-		//console.log(myReviewForm.children);
 		
 		review = {};
 		localStorage.reviews = JSON.stringify(reviews);
@@ -171,66 +181,62 @@ addReviewBtn.addEventListener('click', (event) => {
 
 
 
- //DRAG 'n' DROP
-// document.addEventListener('mousedown', (event) => {
-// 	if (event.which != 1) { // 
-//     	return; 
-//   	}
-//   	console.log('down');
-// 	let target = event.target;
-// 	
-// 	let checkTargetAdress1 = target.parentElement.classList.contains('pop-up-address');
-// 	let checkTargetAdress2 = target.classList.contains('pop-up-address');
-// 	
-// 	if (checkTargetAdress1 || checkTargetAdress2) {
-// 		console.log(popUp);
-// 		dragObject.popUp = popUp;
-// 		dragObject.width = popUp.clientWidth;
-// 		dragObject.downX = event.pageX;
-// 		dragObject.downY = event.pageY;
-// 		//console.log(dragObject.downX);
-// 		//console.log(dragObject.downY);
-// 	}
-// 
-// });
-// 
-// document.addEventListener('mousemove' , (event) => {
-// 	if (!dragObject.popUp) {
-// 		return;
-// 	}
-// 	console.log('move');
-// 	let coords = getCoords(popUp);
-// 
-// 	dragObject.shiftX = dragObject.downX - coords.left;
-// 	dragObject.shiftY = dragObject.downY - coords.top;
-// 	let x = event.pageX - dragObject.shiftX;
-// 	let y = event.pageY - dragObject.shiftY;
-// 	console.log(x); // Если не добавлять эти рассчеты в pop-up, то увидишь, что они адекватные по мере движения мышкой по экрану, но если внизу (две закомментированные строчки рядом) я присваиваю в стили, то они начинают себя вести неадекватно, посмотри.
-// 	console.log(y); // Если не добавлять эти рассчеты в pop-up, то увидишь, что они адекватные по мере движения мышкой по экрану, но если внизу (две закомментированные строчки рядом) я присваиваю в стили, то они начинают себя вести неадекватно, посмотри.
-// 	//console.log(popUp.style.left);
-// 	
-// 	popUp.style.left = x +'px'; // Загадочные вещи происходят тут
-//    popUp.style.top = y +'px'; //  Загадочные вещи происходят тут
-// 
-// 
-// 
-// 
-// 
-//   	//popUp.style.width = dragObject.width + 'px'; 
-// });
-// 
-// document.addEventListener('mouseup', (event) => {
-// 	console.log('up');
-// 	dragObject.popUp = null;
-// 
-// });
-// 
-// 
-// function getCoords(target) {   
-// 	var box = target.getBoundingClientRect();
-// 
-// 	return {
-//    		top: box.top + pageYOffset,
-//    		left: box.left + pageXOffset
-// 	};
-// }// //
+
+// DRAG 'n' DROP
+document.addEventListener('mousedown', (event) => {
+	if (event.which != 1) { // 
+    	return; 
+  	}
+  	console.log('down');
+	let target = event.target;
+	
+	let checkTargetAdress1 = target.parentElement.classList.contains('pop-up-address');
+	let checkTargetAdress2 = target.classList.contains('pop-up-address');
+	
+	if (checkTargetAdress1 || checkTargetAdress2) {
+		console.log(popUp);
+		dragObject.popUp = popUp;
+		dragObject.downX = event.pageX;
+		dragObject.downY = event.pageY;
+		
+	}
+	console.log(dragObject);
+});
+
+document.addEventListener('mousemove' , (event) => {
+	event.preventDefault();
+
+	if (!dragObject.popUp) {
+		return;
+	}
+	console.log('move');
+	let coords = getCoords(dragObject.popUp);
+
+	dragObject.shiftX = dragObject.downX - coords.left;
+	dragObject.shiftY = dragObject.downY - coords.top;
+
+	let test1 = event.pageX - dragObject.shiftX + 'px';
+	let test2 = event.pageY - dragObject.shiftY + 'px';
+	console.log(test1, test2);
+	
+	
+	popUp.style.left = test1; // Загадочные вещи происходят тут
+   	popUp.style.top = test2; //  Загадочные вещи происходят тут
+
+});
+
+document.addEventListener('mouseup', (event) => {
+	console.log('up');
+	dragObject.popUp = null;
+
+});
+
+
+function getCoords(target) {   
+	var box = target.getBoundingClientRect();
+
+	return {
+   		top: box.top + pageYOffset,
+   		left: box.left + pageXOffset
+	};
+}// //

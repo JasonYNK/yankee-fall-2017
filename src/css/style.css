@@ -24,8 +24,8 @@
 		display: none;
 		z-index: 100;
 		background-color: #fff; 
-		top: 0;
-		left: 0;
+		top: 0px;
+		left: 0px;
 		width: 380px;
 		font-size: 0;
 		box-sizing: border-box;
@@ -33,6 +33,7 @@
 		border-radius: 10px;
 	}
 		.pop-up-address {
+			position: relative;
 			border-radius: 10px 10px 0 0;
 			background-color: #ff8663; 
 			color: #fff;
@@ -42,17 +43,20 @@
 			cursor: pointer;
 		}
 			.pop-up-icon-marker {
-				float: left;
+				display: inline-block;
 			}	
 			.pop-up-location {
-				float: left;
-				margin: 0;
+				display: inline-block;
 				margin-left: 8px;
+				margin-right: 5px;
 				font-size: 12px;
 				font-weight: bold;
 			}
 			.pop-up-close {
-				float: right;
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				display: inline-block;
 				cursor: pointer;
 			}
 		.pop-up-review {
@@ -64,7 +68,6 @@
 			.pop-up-review-name {
 				font-weight: bold;
 				display: inline-block;
-				margin: 0;
 			}
 			.pop-up-review-place {
 				color: #aaa;
@@ -76,7 +79,7 @@
 			}
 			.pop-up-review-text {
 				display: block;
-				margin: 0;
+				
 			}
 			.pop-up-review-noreviews {
 
