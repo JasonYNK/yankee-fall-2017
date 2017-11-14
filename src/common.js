@@ -83,6 +83,21 @@ function createCluster() {
     );
 }
 
+function addMarkerListener() {
+		for (let i = 0; i < markers.length; i++) {
+			markers[i].addListener('click', (event) => {
+				if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) {
+					console.log(reviews[i]);
+					let x = reviews[i].xAxis;
+					let y = reviews[i].yAxis;
+					popUpLocation.textContent = reviews[i].location;
+					showPopUp(x, y);
+				}
+				
+			});
+		}
+	}
+
 
 
 if ('reviews' in localStorage) {
@@ -100,8 +115,9 @@ function initMap() {
 	
 	createCluster();
 	map.addListener('click', (event) => {
-		let xAxis = event.pixel.x;
-		let yAxis = event.pixel.y;
+		console.log(event);
+		xAxis = event.pixel.x;
+		yAxis = event.pixel.y;
 		let latlng = event.latLng;
 		if (popUpSwitch === 1) {
 			hidePopUp();
@@ -123,7 +139,11 @@ function initMap() {
 				alert('Error ' + status);
 			}
 		});	
-	});  
+	});
+	
+	
+	addMarkerListener();
+	
 }
 
 
@@ -149,7 +169,8 @@ addReviewBtn.addEventListener('click', (event) => {
 	review.date = time;
 	review.lat = lat;
 	review.lng = lng;
-	console.log(review);
+	review.xAxis = xAxis;
+	review.yAxis = yAxis;
 	
 	for (let i = 0; i < myReviewForm.children.length; i++) {
 			myReviewForm.children[i].value = '';
@@ -167,6 +188,7 @@ addReviewBtn.addEventListener('click', (event) => {
 
 		addMarker();
 		createCluster();
+		addMarkerListener();
 
 		let reviewComment = document.createElement('div');
 		reviewComment.innerHTML = `<p class="pop-up-review-name">${review.inputData.name}</p><p class="pop-up-review-place">${review.inputData.place}<span>${review.date}</span></p><p class="pop-up-review-text">${review.inputData.desc}!</p>`;
@@ -183,7 +205,7 @@ addReviewBtn.addEventListener('click', (event) => {
 
 
 // DRAG 'n' DROP
-document.addEventListener('mousedown', (event) => {
+/* document.addEventListener('mousedown', (event) => {
 	if (event.which != 1) { // 
     	return; 
   	}
@@ -239,4 +261,4 @@ function getCoords(target) {
    		top: box.top + pageYOffset,
    		left: box.left + pageXOffset
 	};
-}// //
+} */
