@@ -11,6 +11,7 @@ let myReviewForm = document.querySelector('.pop-up-myreview-form');
 let nameReview = document.querySelector('#nameReview');
 let placeReview = document.querySelector('#placeReview');
 let descReview = document.querySelector('#descReview');
+let reviewComment = null;
 let popUpSwitch = 0; // pop-up closed, 1 - open
 let dragObject = {};
 let reviews = [];
@@ -18,13 +19,16 @@ let markers = [];
 let review = {};
 let lat;
 let lng;
+let xAxis;
+let yAxis;
 let geocoder;
+let markerCluster;
 
-function showPopUp(x,y) {
+function showPopUp() {
 	popUp.style.display = 'block';
 	popUpSwitch = 1;
-	popUp.style.top = y + 'px';
-	popUp.style.left = x + 'px';
+	popUp.style.top = yAxis + 'px';
+	popUp.style.left = xAxis + 'px';
 }
 
 function hidePopUp() {
@@ -61,6 +65,7 @@ function formatDate(date) {
 function addMarker() {
 	markers = [];
 	for (let i = 0; i < reviews.length; i++) {
+		//if (reviews[i])
 		let lat = +reviews[i].lat.toFixed(3);
 		let lng = +reviews[i].lng.toFixed(3);
 		marker = new google.maps.Marker({
@@ -73,7 +78,7 @@ function addMarker() {
 }
 
 function createCluster() {
-	let markerCluster = new MarkerClusterer(
+	markerCluster = new MarkerClusterer(
 		map,
 	 	markers,
         {	
@@ -84,16 +89,51 @@ function createCluster() {
 }
 
 function addMarkerListener() {
+	
 		for (let i = 0; i < markers.length; i++) {
 			markers[i].addListener('click', (event) => {
-				if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) {
-					console.log(reviews[i]);
-					let x = reviews[i].xAxis;
-					let y = reviews[i].yAxis;
-					popUpLocation.textContent = reviews[i].location;
-					showPopUp(x, y);
+				console.log('click on Marker');
+				noReviews.textContent = '';
+				if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) { // Если нашли такой маркер с такими координатами на карте, то
+					
+					for (let j = 0; j < reviews.length; j++) {
+						
+						if ((+markers[i].position.lat().toFixed(3) === +reviews[j].lat.toFixed(3)) && (+markers[i].position.lng().toFixed(3) === +reviews[j].lng.toFixed(3))) { // и если позиция маркера соотв. с елементом в массиве отзывов,значит что то делать с этим отзывом
+							xAxis = reviews[j].xAxis;
+							yAxis = reviews[j].yAxis;
+							popUpLocation.textContent = reviews[j].location;
+							
+							
+
+							if (popUpSwitch === 0) {
+								showPopUp();
+								popUpSwitch = 1;
+							} else {
+								popUp.style.top = yAxis + 'px';
+								popUp.style.left = xAxis + 'px';
+							}
+
+							
+
+							if (reviewComment !== null) {
+								for (let i = popUpReview.children.length - 1; i > 0; i--) {
+									console.log('loopCycleMarker');
+									if (popUpReview.children[i].tagName === 'DIV') {
+										console.log('loopMarker');
+										 popUpReview.removeChild(popUpReview.children[i]); 
+									}
+								}
+								reviewComment = null;
+							}
+
+							reviewComment = document.createElement('div');
+							reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
+							popUpReview.appendChild(reviewComment);
+							
+						}
+						
+					}
 				}
-				
 			});
 		}
 	}
@@ -115,7 +155,7 @@ function initMap() {
 	
 	createCluster();
 	map.addListener('click', (event) => {
-		console.log(event);
+		console.log('Click on Map');
 		xAxis = event.pixel.x;
 		yAxis = event.pixel.y;
 		let latlng = event.latLng;
@@ -131,8 +171,20 @@ function initMap() {
 				if (results[0]) {
 					review.location = results[0].formatted_address;
 					popUpLocation.textContent = review.location;
-					showPopUp(xAxis, yAxis);
-					popUpReview.innerHTML = '<p class="pop-up-review-noreviews">Отзывов пока нету!</p>';
+					showPopUp();
+					noReviews.textContent = 'Отзывов пока нету!';
+					if (reviewComment !== null) {
+						for (let i = 0; i < popUpReview.children.length; i++) {
+							console.log('loopCycle');
+							if (popUpReview.children[i].tagName === 'DIV') {
+								console.log('loop');
+								popUpReview.removeChild(popUpReview.children[i]);
+							}
+						}
+						// popUpReview.removeChild(reviewComment);
+						reviewComment = null;
+					}
+					
 				}
 	
 			} else {
@@ -141,7 +193,6 @@ function initMap() {
 		});	
 	});
 	
-	
 	addMarkerListener();
 	
 }
@@ -149,6 +200,7 @@ function initMap() {
 
 
 document.addEventListener('click', (event) => {
+	console.log('click on Document');
 	let target = event.target;
 	let checkClosePopUp = target.classList.contains('pop-up-close');
 	if (checkClosePopUp) {
@@ -157,9 +209,9 @@ document.addEventListener('click', (event) => {
 });
 
 addReviewBtn.addEventListener('click', (event) => {
-
-	let time = new Date();
-	time = formatDate(time);
+	console.log('click on ButtonSave');
+	let time = new Date();  
+	time = formatDate(time); 
 	review.inputData = {
 		name: nameReview.value,
 		place: placeReview.value,
@@ -167,10 +219,26 @@ addReviewBtn.addEventListener('click', (event) => {
 	}
 
 	review.date = time;
-	review.lat = lat;
+
 	review.lng = lng;
+	review.lat = lat;
 	review.xAxis = xAxis;
 	review.yAxis = yAxis;
+
+	for (let i = 0; i < reviews.length; i++) {
+		console.log('cycle in btn');
+		if (popUpLocation.textContent === reviews[i].location) {
+			review.location = reviews[i].location;
+			review.xAxis = reviews[i].xAxis;
+			review.yAxis = reviews[i].yAxis;
+			review.lng = reviews[i].lng;
+			review.lat = reviews[i].lat;
+
+		}
+	}
+	
+	
+	
 	
 	for (let i = 0; i < myReviewForm.children.length; i++) {
 			myReviewForm.children[i].value = '';
@@ -178,11 +246,7 @@ addReviewBtn.addEventListener('click', (event) => {
 
 	if (!review.inputData.name || !review.inputData.place || !review.inputData.desc) {
 		alert('Заполните поля!');
-	} else {
-
-		if (noReviews !== '') {
-			popUpReview.textContent = '';
-		}
+	} else {	
 		
 		fillReviewObj(review);
 
@@ -190,9 +254,13 @@ addReviewBtn.addEventListener('click', (event) => {
 		createCluster();
 		addMarkerListener();
 
-		let reviewComment = document.createElement('div');
+
+		reviewComment = document.createElement('div');
 		reviewComment.innerHTML = `<p class="pop-up-review-name">${review.inputData.name}</p><p class="pop-up-review-place">${review.inputData.place}<span>${review.date}</span></p><p class="pop-up-review-text">${review.inputData.desc}!</p>`;
 		popUpReview.appendChild(reviewComment);
+		
+		noReviews.textContent = '';
+		
 
 		
 		review = {};
