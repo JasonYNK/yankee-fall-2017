@@ -111,6 +111,7 @@ function createCluster() {
 function addMarkerListener() {
 		for (let i = 0; i < markers.length; i++) {
 			markers[i].addListener('click', (event) => {
+				// console.log('marker'event)
 				noReviews.textContent = '';
 
 				if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) { // Если нашли такой маркер с такими координатами на карте, то
@@ -223,8 +224,9 @@ function initMap() {
 	addMarkerListener();
 
 	google.maps.event.addListener(markerCluster, "clusterclick", function (cluster, event) {
+		console.log(cluster);
 		 event.stopPropagation();
-		 //console.log(markerCluster);
+		
 
 		 if (sliderSwitch === 1) {
 				return;
@@ -237,13 +239,13 @@ function initMap() {
 			slider.style.top = event.screenY +'px';
 			slider.style.left = event.screenX + 'px';
 			
-			for (let i = 0; i < markerCluster.markers_.length; i++) {
+			for (let i = 0; i < cluster.markers_.length; i++) {
 				// console.log(markerCluster.clusters_[i]);
 				// console.log(reviews);
 				for (let j = 0; j < reviews.length; j++) {
 					
-					if (markerCluster.markers_[i].position.lat() === +reviews[j].lat && markerCluster.markers_[i].position.lng() === +reviews[j].lng) {
-						console.log(reviews[j]);
+					if (cluster.markers_[i].position.lat() === reviews[j].lat && cluster.markers_[i].position.lng() === reviews[j].lng) {
+						console.log(reviews[j].inputData); // Проблема решена, продолжать тут <============================================================
 					}
 				}
 				
