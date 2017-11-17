@@ -3,6 +3,7 @@
 // проблемы с координатами xAxis, yAxis
 
 
+
  let map,
 	marker,
 	geocoder,
@@ -152,20 +153,38 @@ function createPagination() {
 	for (let i = 0; i < slides; i++) {
 		let span = document.createElement('span');
 		span.textContent = i + 1;
+		// span.style.borderTop = '3px solid #000';
+		span.style.paddingTop = '10px';
 		sliderPagination.appendChild(span);
 	}
+
+	sliderPagination.children[0].style.borderTop = '3px solid #000';
 
 	let sliderPaginationChildren = slider.querySelectorAll('.slider-pagination span');
 
 	for (let i = 0; i < sliderPaginationChildren.length; i++) {
 		sliderPaginationChildren[i].style.width = (400 / slides) + 'px';
 		sliderPaginationChildren[i].addEventListener('click', (event) => {
+
 		let target = event.target;
 		counter = (+target.textContent) - 1;
+
+		for (let j = 0; j < sliderPaginationChildren.length; j++) {
+			console.log(sliderPaginationChildren[j].style.borderTop);
+			if (sliderPaginationChildren[j].style.borderTop === '3px solid #000' || sliderPaginationChildren[j].style.borderTop === '3px solid rgb(0, 0, 0)') {
+				sliderPaginationChildren[j].style.borderTop = '0px solid #000';
+			}
+		}
+
+		sliderPaginationChildren[counter].style.borderTop = '3px solid #000';
+		
+		
+		
 
 		sliderWrap.style.marginLeft = -(counter * 400) + 'px';
 		});
 	}
+	// sliderPagination.children[counter].style.borderTop = '3px solid #000';
 }
 
 if ('reviews' in localStorage) {
@@ -224,7 +243,6 @@ function initMap() {
 	addMarkerListener();
 
 	google.maps.event.addListener(markerCluster, "clusterclick", function (cluster, event) {
-		console.log(cluster);
 		 event.stopPropagation();
 		
 
@@ -238,49 +256,83 @@ function initMap() {
 
 			slider.style.top = event.screenY +'px';
 			slider.style.left = event.screenX + 'px';
-			
+
+			let cloneReviews = [];
+
+			for (let i = 0; i < reviews.length; i++) {
+				cloneReviews[i] = reviews[i];
+				cloneReviews[i].used = 0; // Почему надо присваивать?
+			}
+			console.log(cloneReviews);
 			for (let i = 0; i < cluster.markers_.length; i++) {
-				// console.log(markerCluster.clusters_[i]);
-				// console.log(reviews);
 				for (let j = 0; j < reviews.length; j++) {
 					
-					if (cluster.markers_[i].position.lat() === reviews[j].lat && cluster.markers_[i].position.lng() === reviews[j].lng) {
-						console.log(reviews[j].inputData); // Проблема решена, продолжать тут <============================================================
+					if (cluster.markers_[i].position.lat() === reviews[j].lat && cluster.markers_[i].position.lng() === reviews[j].lng && cloneReviews[j].used !== 1) {
+						cloneReviews[j].used = 1;
+
+						let newSliderPage = document.createElement('div');
+						newSliderPage.setAttribute('class', 'slider-page');
+						sliderWrap.appendChild(newSliderPage);
+			
+						slides = sliderWrap.children.length;
+			
+						let newSliderPlace = document.createElement('h2');
+						newSliderPlace.textContent = reviews[j].inputData.place;
+						newSliderPlace.setAttribute('class', 'slider-place');
+						newSliderPage.appendChild(newSliderPlace);
+			
+						let newSliderAddress = document.createElement('a');
+						newSliderAddress.setAttribute('class', 'slider-address');
+						newSliderAddress.setAttribute('href', '#');
+						newSliderAddress.textContent = reviews[j].location;
+						newSliderPage.appendChild(newSliderAddress);
+			
+						let newSliderDesc = document.createElement('p');
+						newSliderDesc.setAttribute('class', 'slider-desc');
+						newSliderDesc.textContent = reviews[j].inputData.desc;
+						newSliderPage.appendChild(newSliderDesc);
+			
+						let newSliderDate = document.createElement('p');
+						newSliderDate.setAttribute('class', 'slider-date');
+						newSliderDate.textContent = reviews[j].date;
+						newSliderPage.appendChild(newSliderDate);
+			
+						let newSliderLine = document.createElement('div');
+						newSliderLine.setAttribute('class', 'slider-line');
+						newSliderPage.appendChild(newSliderLine);
+
+						newSliderPage.addEventListener('click', (event) => {
+							let target = event.target;
+							if (target.classList[0] === 'slider-address') {
+								console.log(reviews[j]);
+
+								if (reviewComment !== null) {
+									for (let i = popUpReview.children.length - 1; i > 0; i--) {
+										if (popUpReview.children[i].tagName === 'DIV') {
+											 popUpReview.removeChild(popUpReview.children[i]); 
+										}
+								}
+
+								reviewComment = null;
+								
+								}
+
+								// addMarker();
+								// createCluster();
+
+								reviewComment = document.createElement('div');
+								reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
+								popUpReview.appendChild(reviewComment);
+								popUpLocation.textContent = reviews[j].location;
+								noReviews.textContent = '';
+								xAxis = reviews[j].xAxis;
+								yAxis = reviews[j].yAxis;
+								showPopUp();
+							}
+						});
 					}
 				}
-				
 			}
-
-			let newSliderPage = document.createElement('div');
-			newSliderPage.setAttribute('class', 'slider-page');
-			sliderWrap.appendChild(newSliderPage);
-
-			slides = sliderWrap.children.length;
-
-			let newSliderPlace = document.createElement('h2');
-			newSliderPlace.textContent = 'Place one';
-			newSliderPlace.setAttribute('class', 'slider-place');
-			newSliderPage.appendChild(newSliderPlace);
-
-			let newSliderAddress = document.createElement('a');
-			newSliderAddress.setAttribute('class', 'slider-address');
-			newSliderAddress.setAttribute('href', '#');
-			newSliderAddress.textContent = 'Address';
-			newSliderPage.appendChild(newSliderAddress);
-
-			let newSliderDesc = document.createElement('p');
-			newSliderDesc.setAttribute('class', 'slider-desc');
-			newSliderDesc.textContent = 'Description';
-			newSliderPage.appendChild(newSliderDesc);
-
-			let newSliderDate = document.createElement('p');
-			newSliderDate.setAttribute('class', 'slider-date');
-			newSliderDate.textContent = 'xx-xx-xx';
-			newSliderPage.appendChild(newSliderDate);
-
-			let newSliderLine = document.createElement('div');
-			newSliderLine.setAttribute('class', 'slider-line');
-			newSliderPage.appendChild(newSliderLine);
 
 			createPagination();
 	});
@@ -335,13 +387,6 @@ addReviewBtn.addEventListener('click', (event) => {
 		createCluster();
 		addMarkerListener();
 
-		// for (let i = 0; i < reviews.length - 1; i++) {
-		// 	if (popUpLocation.textContent === reviews[i].location) {
-		// 		console.log(1);
-		// 		markers.splice(markers.length - 1, 1);
-		// 	}
-		// }
-
 		reviewComment = document.createElement('div');
 		reviewComment.innerHTML = `<p class="pop-up-review-name">${review.inputData.name}</p><p class="pop-up-review-place">${review.inputData.place}<span>${review.date}</span></p><p class="pop-up-review-text">${review.inputData.desc}!</p>`;
 		popUpReview.appendChild(reviewComment);
@@ -379,7 +424,16 @@ slider.addEventListener('click', (event) => {
 			counter = 0;
 		}
 
+		sliderPagination.children[counter].style.borderTop = '3px solid #000';
+
+		if (counter !== 0) {
+			sliderPagination.children[counter - 1].style.borderTop = '0px solid #000';
+		} else {
+			sliderPagination.children[slides - 1].style.borderTop = '0px solid #000';
+		}
+
 		sliderWrap.style.marginLeft = -(counter * 400) + 'px';
+
 	}
 
 	if (target.classList[0] === 'slider-leftarr') {
@@ -387,6 +441,14 @@ slider.addEventListener('click', (event) => {
 
 		if (counter < 0) {
 			counter = slides - 1;
+		}
+
+		sliderPagination.children[counter].style.borderTop = '3px solid #000';
+
+		if (counter !== (slides - 1)) {
+			sliderPagination.children[counter + 1].style.borderTop = '0px solid #000';
+		} else {
+			sliderPagination.children[0].style.borderTop = '0px solid #000';
 		}
 
 		sliderWrap.style.marginLeft = -(counter * 400) + 'px';
