@@ -1,8 +1,10 @@
 // После создания кластера метка остается, удаляется только при перезагрузке
 // HTML & CSS почему иконки не принимают размеры если задаешь им а наследуют 0 значения от родителя(awesome.font)
 // проблемы с координатами xAxis, yAxis
-
-
+// наладить drag 'n' drop
+// текстовый отзыв вылазит за таблицу и в маркере и в слайдере
+// время от времени клик по кластеру не проходит
+// getBoundingRecTop при первом нажатии уходит в 0, потом нормально (слайдер)
 
  let map,
 	marker,
@@ -49,6 +51,49 @@ function showPopUp() {
 	popUpSwitch = 1;
 	popUp.style.top = yAxis + 'px';
 	popUp.style.left = xAxis + 'px';
+
+	if (popUp.clientHeight + popUp.getBoundingClientRect().top > document.documentElement.clientHeight) {
+		let visibleChunk = document.documentElement.clientHeight - popUp.getBoundingClientRect().top;
+		let hiddenChunk = popUp.clientHeight - visibleChunk;
+		popUp.style.top = (yAxis - hiddenChunk) + 'px';
+	}
+
+	if (popUp.clientWidth + popUp.getBoundingClientRect().left > document.documentElement.clientWidth) {
+		let visibleChunk = document.documentElement.clientWidth - popUp.getBoundingClientRect().left;
+		let hiddenChunk = popUp.clientWidth - visibleChunk;
+		popUp.style.left = (xAxis - hiddenChunk) + 'px';
+	}
+}
+
+function showSlider() {
+	slider.style.display = 'block';
+	sliderSwitch = 1;
+
+	console.log(slider.clientHeight);
+	console.log(slider.getBoundingClientRect().top);
+	console.log(document.documentElement.clientHeight);
+
+	if (slider.clientHeight + slider.getBoundingClientRect().top > document.documentElement.clientHeight) {
+	// Проблема
+		let visibleChunk = document.documentElement.clientHeight - slider.getBoundingClientRect().top;
+		let hiddenChunk = slider.clientHeight - visibleChunk;
+		console.log(visibleChunk, hiddenChunk, yAxis);
+		slider.style.top = (yAxis - hiddenChunk) + 'px';
+	}
+
+	if (slider.clientWidth + popUp.getBoundingClientRect().left > document.documentElement.clientWidth) {
+		console.log('x');
+		let visibleChunk = document.documentElement.clientWidth - slider.getBoundingClientRect().left;
+		let hiddenChunk = slider.clientWidth - visibleChunk;
+		slider.style.left = (xAxis - hiddenChunk) + 'px';
+	}
+}
+
+function hideSlider() {
+	slider.style.display = 'none';
+	sliderSwitch = 0;
+	sliderWrap.textContent = '';
+	sliderPagination.textContent = '';
 }
 
 function hidePopUp() {
@@ -112,7 +157,6 @@ function createCluster() {
 function addMarkerListener() {
 		for (let i = 0; i < markers.length; i++) {
 			markers[i].addListener('click', (event) => {
-				// console.log('marker'event)
 				noReviews.textContent = '';
 
 				if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) { // Если нашли такой маркер с такими координатами на карте, то
@@ -122,6 +166,10 @@ function addMarkerListener() {
 							yAxis = reviews[j].yAxis;
 							popUpLocation.textContent = reviews[j].location;
 							
+							if (sliderSwitch === 1) {
+								hideSlider();
+							}
+
 							if (popUpSwitch === 0) {
 								showPopUp();
 								popUpSwitch = 1;
@@ -153,7 +201,6 @@ function createPagination() {
 	for (let i = 0; i < slides; i++) {
 		let span = document.createElement('span');
 		span.textContent = i + 1;
-		// span.style.borderTop = '3px solid #000';
 		span.style.paddingTop = '10px';
 		sliderPagination.appendChild(span);
 	}
@@ -170,7 +217,6 @@ function createPagination() {
 		counter = (+target.textContent) - 1;
 
 		for (let j = 0; j < sliderPaginationChildren.length; j++) {
-			console.log(sliderPaginationChildren[j].style.borderTop);
 			if (sliderPaginationChildren[j].style.borderTop === '3px solid #000' || sliderPaginationChildren[j].style.borderTop === '3px solid rgb(0, 0, 0)') {
 				sliderPaginationChildren[j].style.borderTop = '0px solid #000';
 			}
@@ -178,18 +224,17 @@ function createPagination() {
 
 		sliderPaginationChildren[counter].style.borderTop = '3px solid #000';
 		
-		
-		
-
 		sliderWrap.style.marginLeft = -(counter * 400) + 'px';
 		});
 	}
-	// sliderPagination.children[counter].style.borderTop = '3px solid #000';
 }
 
 if ('reviews' in localStorage) {
 	reviews = JSON.parse(localStorage.reviews);
 }
+
+
+
 
 function initMap() {
 	map = new google.maps.Map(document.getElementById('map'), {
@@ -203,7 +248,13 @@ function initMap() {
 	
 	createCluster();
 	map.addListener('click', (event) => {
-		//console.log('MAP CLICK');
+		if (sliderSwitch === 1) {
+			slider.style.display = 'none';
+			sliderWrap.textContent = '';
+			sliderPagination.textContent = '';
+			sliderSwitch = 0;
+		}
+
 		xAxis = event.pixel.x;
 		yAxis = event.pixel.y;
 		let latlng = event.latLng;
@@ -250,12 +301,7 @@ function initMap() {
 				return;
 		}
 
-			slider.style.display = 'block';
-			sliderSwitch = 1;
-
-
-			slider.style.top = event.screenY +'px';
-			slider.style.left = event.screenX + 'px';
+			
 
 			let cloneReviews = [];
 
@@ -263,14 +309,16 @@ function initMap() {
 				cloneReviews[i] = reviews[i];
 				cloneReviews[i].used = 0; // Почему надо присваивать?
 			}
-			console.log(cloneReviews);
+			
 			for (let i = 0; i < cluster.markers_.length; i++) {
 				for (let j = 0; j < reviews.length; j++) {
 					
 					if (cluster.markers_[i].position.lat() === reviews[j].lat && cluster.markers_[i].position.lng() === reviews[j].lng && cloneReviews[j].used !== 1) {
 						cloneReviews[j].used = 1;
+						hidePopUp();
 
 						let newSliderPage = document.createElement('div');
+						newSliderPage.style.verticalAlign = 'top';
 						newSliderPage.setAttribute('class', 'slider-page');
 						sliderWrap.appendChild(newSliderPage);
 			
@@ -304,8 +352,6 @@ function initMap() {
 						newSliderPage.addEventListener('click', (event) => {
 							let target = event.target;
 							if (target.classList[0] === 'slider-address') {
-								console.log(reviews[j]);
-
 								if (reviewComment !== null) {
 									for (let i = popUpReview.children.length - 1; i > 0; i--) {
 										if (popUpReview.children[i].tagName === 'DIV') {
@@ -317,9 +363,6 @@ function initMap() {
 								
 								}
 
-								// addMarker();
-								// createCluster();
-
 								reviewComment = document.createElement('div');
 								reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
 								popUpReview.appendChild(reviewComment);
@@ -327,17 +370,21 @@ function initMap() {
 								noReviews.textContent = '';
 								xAxis = reviews[j].xAxis;
 								yAxis = reviews[j].yAxis;
+								hideSlider();
 								showPopUp();
 							}
 						});
 					}
 				}
 			}
-
 			createPagination();
+			showSlider();
+
+			yAxis = event.screenY;   // ATTENTION!!!!!!! МЕСТО ПОТЕНЦИАЛЬНОГО БАГА!!!!!!!!!!!!!!
+			xAxis = event.screenX;
+			slider.style.top = yAxis +'px';
+			slider.style.left = xAxis + 'px';
 	});
-
-
 }
 
 document.addEventListener('click', (event) => {
@@ -382,7 +429,11 @@ addReviewBtn.addEventListener('click', (event) => {
 	if (!review.inputData.name || !review.inputData.place || !review.inputData.desc) {
 		alert('Заполните поля!');
 	} else {	
+		// markerCluster.addMarker(marker, false);
 		fillReviewObj(review);
+
+		
+
 		addMarker();
 		createCluster();
 		addMarkerListener();
@@ -402,17 +453,9 @@ addReviewBtn.addEventListener('click', (event) => {
 
 // SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER
 
-
 sliderClose.addEventListener('click', (event) => {
-	slider.style.display = 'none';
-	sliderSwitch = 0;
-	sliderWrap.textContent = '';
-	sliderPagination.textContent = '';
+	hideSlider();
 });
-
-
-
-
 
 slider.addEventListener('click', (event) => {
 	let target = event.target;
