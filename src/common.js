@@ -1,6 +1,6 @@
 
 // ?!? HTML & CSS почему иконки не принимают размеры если задаешь им а наследуют 0 значения от родителя(awesome.font)
-// проблемы с координатами xAxis, yAxis
+
 
 // ?!? текстовый отзыв вылазит за таблицу и в маркере и в слайдере // только если сообщение идет без пробелов, слитно
 // ?!? время от времени клик по кластеру не проходит
@@ -12,9 +12,7 @@ let map,
 	markerCluster;
 
 let lat,
-	lng,
-	xAxis,
-	yAxis;
+	lng;
 
 let reviews = [],
 	markers = [],
@@ -46,9 +44,21 @@ let slides = sliderWrap.children.length;
 let sliderPagination = slider.querySelector('.slider-pagination');
 
 
-function showPopUp() {
+function showPopUp(event) {
+	let xAxis,
+		yAxis;
+
 	popUp.style.display = 'block';
 	popUpSwitch = 1;
+
+	if (event.pixel) {
+		xAxis = event.pixel.x;
+		yAxis = event.pixel.y;
+	} else {
+		xAxis = event.pageX;
+		yAxis = event.pageY;
+	}
+
 	popUp.style.top = yAxis + 'px';
 	popUp.style.left = xAxis + 'px';
 
@@ -65,22 +75,22 @@ function showPopUp() {
 	}
 }
 
-function showSlider() {
+function showSlider(event) {
 	slider.style.display = 'block';
 	sliderSwitch = 1;
-	slider.style.top = yAxis +'px';
-	slider.style.left = xAxis + 'px';
+	slider.style.top = event.screenY +'px';
+	slider.style.left = event.screenX + 'px';
 
 	if (slider.clientHeight + slider.getBoundingClientRect().top > document.documentElement.clientHeight) {
 		let visibleChunk = document.documentElement.clientHeight - slider.getBoundingClientRect().top;
 		let hiddenChunk = slider.clientHeight - visibleChunk;
-		slider.style.top = (yAxis - hiddenChunk) + 'px';
+		slider.style.top = (event.screenY - hiddenChunk) + 'px';
 	} 
 		
 	if (slider.clientWidth + slider.getBoundingClientRect().left > document.documentElement.clientWidth) {
 		let visibleChunk = document.documentElement.clientWidth - slider.getBoundingClientRect().left;
 		let hiddenChunk = slider.clientWidth - visibleChunk;
-		slider.style.left = (xAxis - hiddenChunk) + 'px';
+		slider.style.left = (event.screenX - hiddenChunk) + 'px';
 	} 
 }
 
@@ -92,8 +102,16 @@ function hideSlider() {
 }
 
 function hidePopUp() {
-	popUp.style.display = 'none';
-	popUpSwitch = 0;
+	if (confirmToClose()) {
+		for (let i = 0; i < myReviewForm.children.length; i++) {
+			myReviewForm.children[i].value = '';
+		}
+
+		popUp.style.display = 'none';
+		popUpSwitch = 0;
+	} else {
+		return;
+	}
 }
 
 function fillReviewObj(obj) {
@@ -152,12 +170,9 @@ function addMarkerListener() {
 	for (let i = 0; i < markers.length; i++) {
 		markers[i].addListener('click', (event) => {
 			noReviews.textContent = '';
-
 			if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) { // Если нашли такой маркер с такими координатами на карте, то
 				for (let j = 0; j < reviews.length; j++) {
 					if ((+markers[i].position.lat() === +reviews[j].lat) && (+markers[i].position.lng() === +reviews[j].lng)) { // и если позиция маркера соотв. с елементом в массиве отзывов,значит что то делать с этим отзывом
-						xAxis = reviews[j].xAxis;
-						yAxis = reviews[j].yAxis;
 						popUpLocation.textContent = reviews[j].location;
 						
 						if (sliderSwitch === 1) {
@@ -169,11 +184,8 @@ function addMarkerListener() {
 						}
 
 						if (popUpSwitch === 0) {
-							showPopUp();
+							showPopUp(window.event);
 							popUpSwitch = 1;
-						} else {
-							popUp.style.top = yAxis + 'px';
-							popUp.style.left = xAxis + 'px';
 						}
 
 						if (reviewComment !== null) {
@@ -234,6 +246,25 @@ function getCoords(target) {
    		top: box.top + pageYOffset,
    		left: box.left + pageXOffset
 	};
+}
+
+function confirmToClose() {
+	let confirmation;
+
+	for (let i = 0; i < myReviewForm.children.length; i++) {
+		if (myReviewForm.children[i].value !== '') {
+			confirmation = confirm('Вы уверенны, что хотите закрыть окно с отзывом? При закрытии окна введенные Вами данные не сохранятся!');
+			return confirmation;
+		} else {
+			return true;
+		}
+	}
+
+	// if (confirm) {
+	// 	return true;
+	// } else {
+	// 	return false;
+	// }
 } 
 
 if ('reviews' in localStorage) {
@@ -253,18 +284,7 @@ function initMap() {
 
 	map.addListener('click', (event) => {
 		if (sliderSwitch === 1) {
-			slider.style.display = 'none';
-			sliderWrap.textContent = '';
-			sliderPagination.textContent = '';
-			sliderSwitch = 0;
-		}
-
-		if (event.pixel) {
-			xAxis = event.pixel.x;
-			yAxis = event.pixel.y;
-		} else {
-			xAxis = event.pageX;
-			yAxis = event.pageY;
+			hideSlider();
 		}
 
 		let latlng = event.latLng;
@@ -282,7 +302,7 @@ function initMap() {
 				if (results[0]) {
 					review.location = results[0].formatted_address;
 					popUpLocation.textContent = review.location;
-					showPopUp();
+					showPopUp(event);
 					noReviews.textContent = 'Отзывов пока нет ... ';
 
 					if (reviewComment !== null) {
@@ -376,10 +396,8 @@ function initMap() {
 
 							popUpLocation.textContent = reviews[j].location;
 							noReviews.textContent = '';
-							xAxis = reviews[j].xAxis;
-							yAxis = reviews[j].yAxis;
 							hideSlider();
-							showPopUp();
+							showPopUp(event);
 						}
 					});
 				}
@@ -388,10 +406,7 @@ function initMap() {
 
 		createPagination();
 		
-		yAxis = event.screenY;   // ATTENTION!!!!!!! МЕСТО ПОТЕНЦИАЛЬНОГО БАГА!!!!!!!!!!!!!!
-		xAxis = event.screenX;
-		console.log(yAxis, xAxis);
-		showSlider();
+		showSlider(event);
 	});
 }
 
@@ -417,14 +432,10 @@ addReviewBtn.addEventListener('click', (event) => {
 	review.date = time;
 	review.lng = lng;
 	review.lat = lat;
-	review.xAxis = xAxis;
-	review.yAxis = yAxis;
 
 	for (let i = 0; i < reviews.length; i++) {
 		if (popUpLocation.textContent === reviews[i].location) {
 			review.location = reviews[i].location;
-			review.xAxis = reviews[i].xAxis;
-			review.yAxis = reviews[i].yAxis;
 			review.lng = reviews[i].lng;
 			review.lat = reviews[i].lat;
 		}
