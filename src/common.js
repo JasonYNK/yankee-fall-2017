@@ -1,10 +1,10 @@
-// После создания кластера метка остается, удаляется только при перезагрузке
-// HTML & CSS почему иконки не принимают размеры если задаешь им а наследуют 0 значения от родителя(awesome.font)
+
+// ?!? HTML & CSS почему иконки не принимают размеры если задаешь им а наследуют 0 значения от родителя(awesome.font)
 // проблемы с координатами xAxis, yAxis
 // наладить drag 'n' drop
-// текстовый отзыв вылазит за таблицу и в маркере и в слайдере
-// время от времени клик по кластеру не проходит
-// getBoundingRecTop при первом нажатии уходит в 0, потом нормально (слайдер)
+// ?!? текстовый отзыв вылазит за таблицу и в маркере и в слайдере // только если сообщение идет без пробелов, слитно
+// ?!? время от времени клик по кластеру не проходит
+
 
  let map,
 	marker,
@@ -68,25 +68,20 @@ function showPopUp() {
 function showSlider() {
 	slider.style.display = 'block';
 	sliderSwitch = 1;
-
-	console.log(slider.clientHeight);
-	console.log(slider.getBoundingClientRect().top);
-	console.log(document.documentElement.clientHeight);
+	slider.style.top = yAxis +'px';
+	slider.style.left = xAxis + 'px';
 
 	if (slider.clientHeight + slider.getBoundingClientRect().top > document.documentElement.clientHeight) {
-	// Проблема
 		let visibleChunk = document.documentElement.clientHeight - slider.getBoundingClientRect().top;
 		let hiddenChunk = slider.clientHeight - visibleChunk;
-		console.log(visibleChunk, hiddenChunk, yAxis);
 		slider.style.top = (yAxis - hiddenChunk) + 'px';
-	}
-
-	if (slider.clientWidth + popUp.getBoundingClientRect().left > document.documentElement.clientWidth) {
-		console.log('x');
+	} 
+		
+	if (slider.clientWidth + slider.getBoundingClientRect().left > document.documentElement.clientWidth) {
 		let visibleChunk = document.documentElement.clientWidth - slider.getBoundingClientRect().left;
 		let hiddenChunk = slider.clientWidth - visibleChunk;
 		slider.style.left = (xAxis - hiddenChunk) + 'px';
-	}
+	} 
 }
 
 function hideSlider() {
@@ -129,7 +124,6 @@ function formatDate(date) {
 }
 
 function addMarker() {
-	markers = [];
 	for (let i = 0; i < reviews.length; i++) {
 		
 		let lat = +reviews[i].lat;
@@ -378,12 +372,13 @@ function initMap() {
 				}
 			}
 			createPagination();
-			showSlider();
+			
 
 			yAxis = event.screenY;   // ATTENTION!!!!!!! МЕСТО ПОТЕНЦИАЛЬНОГО БАГА!!!!!!!!!!!!!!
 			xAxis = event.screenX;
-			slider.style.top = yAxis +'px';
-			slider.style.left = xAxis + 'px';
+			console.log(yAxis, xAxis);
+			showSlider();
+		
 	});
 }
 
@@ -429,13 +424,17 @@ addReviewBtn.addEventListener('click', (event) => {
 	if (!review.inputData.name || !review.inputData.place || !review.inputData.desc) {
 		alert('Заполните поля!');
 	} else {	
-		// markerCluster.addMarker(marker, false);
-		fillReviewObj(review);
-
 		
+		fillReviewObj(review);
+		
+		marker = new google.maps.Marker({
+   	 		position: {lat: review.lat, lng: review.lng},
+    		map: map
+		});
 
-		addMarker();
-		createCluster();
+		markers.push(marker);
+
+		markerCluster.addMarker(marker, false);
 		addMarkerListener();
 
 		reviewComment = document.createElement('div');
