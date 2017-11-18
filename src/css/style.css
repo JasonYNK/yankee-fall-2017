@@ -80,6 +80,7 @@
 			}
 			.pop-up-review-text {
 				display: block;
+				overflow: auto;
 				
 			}
 			.pop-up-review-noreviews {
