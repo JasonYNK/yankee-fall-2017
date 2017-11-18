@@ -6,7 +6,7 @@
 // ?!? время от времени клик по кластеру не проходит
 
 
- let map,
+let map,
 	marker,
 	geocoder,
 	markerCluster;
@@ -149,47 +149,51 @@ function createCluster() {
 }
 
 function addMarkerListener() {
-		for (let i = 0; i < markers.length; i++) {
-			markers[i].addListener('click', (event) => {
-				noReviews.textContent = '';
+	for (let i = 0; i < markers.length; i++) {
+		markers[i].addListener('click', (event) => {
+			noReviews.textContent = '';
 
-				if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) { // Если нашли такой маркер с такими координатами на карте, то
-					for (let j = 0; j < reviews.length; j++) {
-						if ((+markers[i].position.lat() === +reviews[j].lat) && (+markers[i].position.lng() === +reviews[j].lng)) { // и если позиция маркера соотв. с елементом в массиве отзывов,значит что то делать с этим отзывом
-							xAxis = reviews[j].xAxis;
-							yAxis = reviews[j].yAxis;
-							popUpLocation.textContent = reviews[j].location;
-							
-							if (sliderSwitch === 1) {
-								hideSlider();
-							}
-
-							if (popUpSwitch === 0) {
-								showPopUp();
-								popUpSwitch = 1;
-							} else {
-								popUp.style.top = yAxis + 'px';
-								popUp.style.left = xAxis + 'px';
-							}
-
-							if (reviewComment !== null) {
-								for (let i = popUpReview.children.length - 1; i > 0; i--) {
-									if (popUpReview.children[i].tagName === 'DIV') {
-										 popUpReview.removeChild(popUpReview.children[i]); 
-									}
-								}
-								reviewComment = null;
-							}
-
-							reviewComment = document.createElement('div');
-							reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
-							popUpReview.appendChild(reviewComment);
+			if (event.latLng.lat() === markers[i].position.lat() && event.latLng.lng() === markers[i].position.lng()) { // Если нашли такой маркер с такими координатами на карте, то
+				for (let j = 0; j < reviews.length; j++) {
+					if ((+markers[i].position.lat() === +reviews[j].lat) && (+markers[i].position.lng() === +reviews[j].lng)) { // и если позиция маркера соотв. с елементом в массиве отзывов,значит что то делать с этим отзывом
+						xAxis = reviews[j].xAxis;
+						yAxis = reviews[j].yAxis;
+						popUpLocation.textContent = reviews[j].location;
+						
+						if (sliderSwitch === 1) {
+							hideSlider();
 						}
+
+						if (popUpSwitch === 1) {
+							hidePopUp();
+						}
+
+						if (popUpSwitch === 0) {
+							showPopUp();
+							popUpSwitch = 1;
+						} else {
+							popUp.style.top = yAxis + 'px';
+							popUp.style.left = xAxis + 'px';
+						}
+
+						if (reviewComment !== null) {
+							for (let i = popUpReview.children.length - 1; i > 0; i--) {
+								if (popUpReview.children[i].tagName === 'DIV') {
+									 popUpReview.removeChild(popUpReview.children[i]); 
+								}
+							}
+							reviewComment = null;
+						}
+
+						reviewComment = document.createElement('div');
+						reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
+						popUpReview.appendChild(reviewComment);
 					}
 				}
-			});
-		}
+			}
+		});
 	}
+}
 
 function createPagination() {
 	for (let i = 0; i < slides; i++) {
@@ -223,12 +227,18 @@ function createPagination() {
 	}
 }
 
+function getCoords(target) {   
+	var box = target.getBoundingClientRect();
+
+	return {
+   		top: box.top + pageYOffset,
+   		left: box.left + pageXOffset
+	};
+} 
+
 if ('reviews' in localStorage) {
 	reviews = JSON.parse(localStorage.reviews);
 }
-
-
-
 
 function initMap() {
 	map = new google.maps.Map(document.getElementById('map'), {
@@ -239,8 +249,8 @@ function initMap() {
 	geocoder = new google.maps.Geocoder;
 
 	addMarker();
-	
 	createCluster();
+
 	map.addListener('click', (event) => {
 		if (sliderSwitch === 1) {
 			slider.style.display = 'none';
@@ -249,8 +259,14 @@ function initMap() {
 			sliderSwitch = 0;
 		}
 
-		xAxis = event.pixel.x;
-		yAxis = event.pixel.y;
+		if (event.pixel) {
+			xAxis = event.pixel.x;
+			yAxis = event.pixel.y;
+		} else {
+			xAxis = event.pageX;
+			yAxis = event.pageY;
+		}
+
 		let latlng = event.latLng;
 
 		if (popUpSwitch === 1) {
@@ -288,97 +304,94 @@ function initMap() {
 	addMarkerListener();
 
 	google.maps.event.addListener(markerCluster, "clusterclick", function (cluster, event) {
-		 event.stopPropagation();
+		event.stopPropagation();
 		
-
-		 if (sliderSwitch === 1) {
-				return;
+		if (sliderSwitch === 1) {
+			return;
 		}
 
-			
+		let cloneReviews = [];
 
-			let cloneReviews = [];
+		for (let i = 0; i < reviews.length; i++) {
+			cloneReviews[i] = reviews[i];
+			cloneReviews[i].used = 0; // Почему надо присваивать?
+		}
+		
+		for (let i = 0; i < cluster.markers_.length; i++) {
+			for (let j = 0; j < reviews.length; j++) {
+				if (cluster.markers_[i].position.lat() === reviews[j].lat && cluster.markers_[i].position.lng() === reviews[j].lng && cloneReviews[j].used !== 1) {
+					cloneReviews[j].used = 1;
+					hidePopUp();
 
-			for (let i = 0; i < reviews.length; i++) {
-				cloneReviews[i] = reviews[i];
-				cloneReviews[i].used = 0; // Почему надо присваивать?
-			}
-			
-			for (let i = 0; i < cluster.markers_.length; i++) {
-				for (let j = 0; j < reviews.length; j++) {
-					
-					if (cluster.markers_[i].position.lat() === reviews[j].lat && cluster.markers_[i].position.lng() === reviews[j].lng && cloneReviews[j].used !== 1) {
-						cloneReviews[j].used = 1;
-						hidePopUp();
+					let newSliderPage = document.createElement('div');
+					newSliderPage.style.verticalAlign = 'top';
+					newSliderPage.setAttribute('class', 'slider-page');
+					sliderWrap.appendChild(newSliderPage);
+		
+					slides = sliderWrap.children.length;
+		
+					let newSliderPlace = document.createElement('h2');
+					newSliderPlace.textContent = reviews[j].inputData.place;
+					newSliderPlace.setAttribute('class', 'slider-place');
+					newSliderPage.appendChild(newSliderPlace);
+		
+					let newSliderAddress = document.createElement('a');
+					newSliderAddress.setAttribute('class', 'slider-address');
+					newSliderAddress.setAttribute('href', '#');
+					newSliderAddress.textContent = reviews[j].location;
+					newSliderPage.appendChild(newSliderAddress);
+		
+					let newSliderDesc = document.createElement('p');
+					newSliderDesc.setAttribute('class', 'slider-desc');
+					newSliderDesc.textContent = reviews[j].inputData.desc;
+					newSliderPage.appendChild(newSliderDesc);
+		
+					let newSliderDate = document.createElement('p');
+					newSliderDate.setAttribute('class', 'slider-date');
+					newSliderDate.textContent = reviews[j].date;
+					newSliderPage.appendChild(newSliderDate);
+		
+					let newSliderLine = document.createElement('div');
+					newSliderLine.setAttribute('class', 'slider-line');
+					newSliderPage.appendChild(newSliderLine);
 
-						let newSliderPage = document.createElement('div');
-						newSliderPage.style.verticalAlign = 'top';
-						newSliderPage.setAttribute('class', 'slider-page');
-						sliderWrap.appendChild(newSliderPage);
-			
-						slides = sliderWrap.children.length;
-			
-						let newSliderPlace = document.createElement('h2');
-						newSliderPlace.textContent = reviews[j].inputData.place;
-						newSliderPlace.setAttribute('class', 'slider-place');
-						newSliderPage.appendChild(newSliderPlace);
-			
-						let newSliderAddress = document.createElement('a');
-						newSliderAddress.setAttribute('class', 'slider-address');
-						newSliderAddress.setAttribute('href', '#');
-						newSliderAddress.textContent = reviews[j].location;
-						newSliderPage.appendChild(newSliderAddress);
-			
-						let newSliderDesc = document.createElement('p');
-						newSliderDesc.setAttribute('class', 'slider-desc');
-						newSliderDesc.textContent = reviews[j].inputData.desc;
-						newSliderPage.appendChild(newSliderDesc);
-			
-						let newSliderDate = document.createElement('p');
-						newSliderDate.setAttribute('class', 'slider-date');
-						newSliderDate.textContent = reviews[j].date;
-						newSliderPage.appendChild(newSliderDate);
-			
-						let newSliderLine = document.createElement('div');
-						newSliderLine.setAttribute('class', 'slider-line');
-						newSliderPage.appendChild(newSliderLine);
+					newSliderPage.addEventListener('click', (event) => {
+						let target = event.target;
 
-						newSliderPage.addEventListener('click', (event) => {
-							let target = event.target;
-							if (target.classList[0] === 'slider-address') {
-								if (reviewComment !== null) {
-									for (let i = popUpReview.children.length - 1; i > 0; i--) {
-										if (popUpReview.children[i].tagName === 'DIV') {
-											 popUpReview.removeChild(popUpReview.children[i]); 
-										}
+						if (target.classList[0] === 'slider-address') {
+							if (reviewComment !== null) {
+								for (let i = popUpReview.children.length - 1; i > 0; i--) {
+									if (popUpReview.children[i].tagName === 'DIV') {
+										popUpReview.removeChild(popUpReview.children[i]); 
+									}
 								}
 
-								reviewComment = null;
-								
-								}
-
-								reviewComment = document.createElement('div');
-								reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
-								popUpReview.appendChild(reviewComment);
-								popUpLocation.textContent = reviews[j].location;
-								noReviews.textContent = '';
-								xAxis = reviews[j].xAxis;
-								yAxis = reviews[j].yAxis;
-								hideSlider();
-								showPopUp();
+							reviewComment = null;
+							
 							}
-						});
-					}
+
+							reviewComment = document.createElement('div');
+							reviewComment.innerHTML = `<p class="pop-up-review-name">${reviews[j].inputData.name}</p><p class="pop-up-review-place">${reviews[j].inputData.place}<span>${reviews[j].date}</span></p><p class="pop-up-review-text">${reviews[j].inputData.desc}!</p>`;
+							popUpReview.appendChild(reviewComment);
+
+							popUpLocation.textContent = reviews[j].location;
+							noReviews.textContent = '';
+							xAxis = reviews[j].xAxis;
+							yAxis = reviews[j].yAxis;
+							hideSlider();
+							showPopUp();
+						}
+					});
 				}
 			}
-			createPagination();
-			
+		}
 
-			yAxis = event.screenY;   // ATTENTION!!!!!!! МЕСТО ПОТЕНЦИАЛЬНОГО БАГА!!!!!!!!!!!!!!
-			xAxis = event.screenX;
-			console.log(yAxis, xAxis);
-			showSlider();
+		createPagination();
 		
+		yAxis = event.screenY;   // ATTENTION!!!!!!! МЕСТО ПОТЕНЦИАЛЬНОГО БАГА!!!!!!!!!!!!!!
+		xAxis = event.screenX;
+		console.log(yAxis, xAxis);
+		showSlider();
 	});
 }
 
@@ -424,7 +437,6 @@ addReviewBtn.addEventListener('click', (event) => {
 	if (!review.inputData.name || !review.inputData.place || !review.inputData.desc) {
 		alert('Заполните поля!');
 	} else {	
-		
 		fillReviewObj(review);
 		
 		marker = new google.maps.Marker({
@@ -447,11 +459,9 @@ addReviewBtn.addEventListener('click', (event) => {
 
 		localStorage.reviews = JSON.stringify(reviews);
 	}
-	
 }); 
 
 // SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER SLIDER
-
 sliderClose.addEventListener('click', (event) => {
 	hideSlider();
 });
@@ -475,7 +485,6 @@ slider.addEventListener('click', (event) => {
 		}
 
 		sliderWrap.style.marginLeft = -(counter * 400) + 'px';
-
 	}
 
 	if (target.classList[0] === 'slider-leftarr') {
@@ -497,17 +506,12 @@ slider.addEventListener('click', (event) => {
 	}
 });
 
-
-
-
-
 // DRAG 'n' DROP
  document.addEventListener('mousedown', (event) => {
 	if (event.which != 1) { 
     	return; 
   	}
 
-  	console.log('down');
 	let target = event.target;
 	
 	let checkTargetAdress1 = target.parentElement.classList.contains('pop-up-address');
@@ -516,7 +520,6 @@ slider.addEventListener('click', (event) => {
 	let checkTargetSlider = target.classList.contains('slider-page');
 
 	if (checkTargetSlider) {
-		console.log(1);
 		dragObject.slider = slider;
 		dragObject.sliderDownX = event.pageX;
 		dragObject.sliderDownY = event.pageY;
@@ -537,8 +540,6 @@ slider.addEventListener('click', (event) => {
 		dragObject.shiftX = dragObject.downX - coords.left;
 		dragObject.shiftY = dragObject.downY - coords.top;
 	}
-	
-	
 });
 
 document.addEventListener('mousemove' , (event) => {
@@ -547,27 +548,15 @@ document.addEventListener('mousemove' , (event) => {
 	if (dragObject.popUp) {
 		popUp.style.left = event.pageX - dragObject.shiftX + 'px';
    		popUp.style.top = event.pageY - dragObject.shiftY + 'px'; 
-   		console.log('move');
 	} else if (dragObject.slider) {
 		slider.style.left = event.pageX - dragObject.sliderShiftX + 'px';
    		slider.style.top = event.pageY - dragObject.sliderShiftY + 'px'; 
-   		console.log('moveS');
 	} else {
 		return;
 	}
 });
 
 document.addEventListener('mouseup', (event) => {
-	console.log('up');
 	dragObject.popUp = null;
 	dragObject.slider = null;
 });
-
-function getCoords(target) {   
-	var box = target.getBoundingClientRect();
-
-	return {
-   		top: box.top + pageYOffset,
-   		left: box.left + pageXOffset
-	};
-} 
