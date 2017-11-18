@@ -153,11 +153,13 @@
 				width: 400px;
 				display: inline-block;
 				white-space: normal;
+				cursor: move;
 			}
 				.slider-place {
 					font-weight: bold;
 					font-size: 18px;
 					margin-bottom: 5px;
+					cursor: default;
 				}
 				.slider-address {
 					cursor: pointer;

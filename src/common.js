@@ -1,7 +1,7 @@
 
 // ?!? HTML & CSS почему иконки не принимают размеры если задаешь им а наследуют 0 значения от родителя(awesome.font)
 // проблемы с координатами xAxis, yAxis
-// наладить drag 'n' drop
+
 // ?!? текстовый отзыв вылазит за таблицу и в маркере и в слайдере // только если сообщение идет без пробелов, слитно
 // ?!? время от времени клик по кластеру не проходит
 
@@ -502,54 +502,66 @@ slider.addEventListener('click', (event) => {
 
 
 // DRAG 'n' DROP
-/* document.addEventListener('mousedown', (event) => {
-	if (event.which != 1) { // 
+ document.addEventListener('mousedown', (event) => {
+	if (event.which != 1) { 
     	return; 
   	}
+
   	console.log('down');
 	let target = event.target;
 	
 	let checkTargetAdress1 = target.parentElement.classList.contains('pop-up-address');
 	let checkTargetAdress2 = target.classList.contains('pop-up-address');
 	
+	let checkTargetSlider = target.classList.contains('slider-page');
+
+	if (checkTargetSlider) {
+		console.log(1);
+		dragObject.slider = slider;
+		dragObject.sliderDownX = event.pageX;
+		dragObject.sliderDownY = event.pageY;
+
+		let sliderCoords = getCoords(dragObject.slider);
+
+		dragObject.sliderShiftX = dragObject.sliderDownX - sliderCoords.left;
+		dragObject.sliderShiftY = dragObject.sliderDownY - sliderCoords.top;
+	}
+
 	if (checkTargetAdress1 || checkTargetAdress2) {
-		console.log(popUp);
 		dragObject.popUp = popUp;
 		dragObject.downX = event.pageX;
 		dragObject.downY = event.pageY;
-		
+
+		let coords = getCoords(dragObject.popUp);
+
+		dragObject.shiftX = dragObject.downX - coords.left;
+		dragObject.shiftY = dragObject.downY - coords.top;
 	}
-	console.log(dragObject);
+	
+	
 });
 
 document.addEventListener('mousemove' , (event) => {
 	event.preventDefault();
 
-	if (!dragObject.popUp) {
+	if (dragObject.popUp) {
+		popUp.style.left = event.pageX - dragObject.shiftX + 'px';
+   		popUp.style.top = event.pageY - dragObject.shiftY + 'px'; 
+   		console.log('move');
+	} else if (dragObject.slider) {
+		slider.style.left = event.pageX - dragObject.sliderShiftX + 'px';
+   		slider.style.top = event.pageY - dragObject.sliderShiftY + 'px'; 
+   		console.log('moveS');
+	} else {
 		return;
 	}
-	console.log('move');
-	let coords = getCoords(dragObject.popUp);
-
-	dragObject.shiftX = dragObject.downX - coords.left;
-	dragObject.shiftY = dragObject.downY - coords.top;
-
-	let test1 = event.pageX - dragObject.shiftX + 'px';
-	let test2 = event.pageY - dragObject.shiftY + 'px';
-	console.log(test1, test2);
-	
-	
-	popUp.style.left = test1; // Загадочные вещи происходят тут
-   	popUp.style.top = test2; //  Загадочные вещи происходят тут
-
 });
 
 document.addEventListener('mouseup', (event) => {
 	console.log('up');
 	dragObject.popUp = null;
-
+	dragObject.slider = null;
 });
-
 
 function getCoords(target) {   
 	var box = target.getBoundingClientRect();
@@ -558,4 +570,4 @@ function getCoords(target) {
    		top: box.top + pageYOffset,
    		left: box.left + pageXOffset
 	};
-} */
+} 
